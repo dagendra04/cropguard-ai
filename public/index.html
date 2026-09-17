@@ -1,0 +1,3618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>CropGuard AI &mdash; Smart Crop Health Platform</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --p: #16a34a;
+      --pd: #15803d;
+      --pl: #bbf7d0;
+      --pbg: #f0fdf4;
+      --sky: #0ea5e9;
+      --am: #f59e0b;
+      --rd: #ef4444;
+      --pu: #8b5cf6;
+      --dk: #1e293b;
+      --tx: #1e293b;
+      --tx2: #64748b;
+      --tx3: #94a3b8;
+      --bd: #e2e8f0;
+      --cd: #ffffff;
+      --bg: #f8fafc;
+      --sw: 260px;
+      --r: 16px;
+      --r2: 12px;
+      --sh: 0 1px 3px rgba(0, 0, 0, .06), 0 4px 16px rgba(0, 0, 0, .06);
+      --shm: 0 4px 6px rgba(0, 0, 0, .07), 0 10px 30px rgba(0, 0, 0, .1);
+      --tr: .22s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    [data-dark] {
+      --bg: #0f172a;
+      --cd: #1e293b;
+      --bd: #334155;
+      --tx: #f1f5f9;
+      --tx2: #94a3b8;
+      --tx3: #64748b;
+      --pbg: #052e16
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--tr), color var(--tr)
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    input,
+    select,
+    textarea {
+      font-family: inherit
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px
+    }
+
+    /* SIDEBAR */
+    .sb {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--sw);
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      box-shadow: 4px 0 24px rgba(0, 0, 0, .2);
+      transition: transform var(--tr)
+    }
+
+    .sb-brand {
+      padding: 22px 18px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .sb-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, .4);
+      flex-shrink: 0
+    }
+
+    .sb-brand h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .sb-brand p {
+      font-size: .65rem;
+      color: #64748b;
+      margin-top: 1px
+    }
+
+    .sb-sec {
+      padding: 14px 12px 4px;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: #475569;
+      text-transform: uppercase
+    }
+
+    .ni {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 11px;
+      margin: 2px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: .83rem;
+      font-weight: 500;
+      transition: all var(--tr);
+      position: relative
+    }
+
+    .ni:hover {
+      background: rgba(255, 255, 255, .06);
+      color: #cbd5e1
+    }
+
+    .ni.on {
+      background: linear-gradient(135deg, rgba(22, 163, 74, .22), rgba(34, 197, 94, .12));
+      color: #4ade80;
+      box-shadow: inset 0 0 0 1px rgba(74, 222, 128, .2)
+    }
+
+    .ni.on::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 18px;
+      background: #4ade80;
+      border-radius: 0 3px 3px 0
+    }
+
+    .ni i {
+      width: 16px;
+      text-align: center;
+      font-size: .85rem
+    }
+
+    .nbadge {
+      margin-left: auto;
+      background: #ef4444;
+      color: #fff;
+      font-size: .6rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+      min-width: 18px;
+      text-align: center
+    }
+
+    .sb-foot {
+      margin-top: auto;
+      padding: 14px;
+      border-top: 1px solid rgba(255, 255, 255, .07)
+    }
+
+    .sp {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .09);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .sdot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .sp .si {
+      flex: 1
+    }
+
+    .sp .si p {
+      font-size: .73rem;
+      color: #cbd5e1;
+      font-weight: 500
+    }
+
+    .sp .si span {
+      font-size: .63rem;
+      color: #64748b
+    }
+
+    .bdemo {
+      background: #f59e0b;
+      color: #1e293b;
+      font-size: .6rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 99px
+    }
+
+    .blive {
+      background: #22c55e;
+      color: #fff;
+      font-size: .6rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 99px
+    }
+
+    /* TOPBAR */
+    .wrap {
+      margin-left: var(--sw);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column
+    }
+
+    .tb {
+      height: 62px;
+      background: var(--cd);
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      gap: 10px;
+      transition: background var(--tr)
+    }
+
+    .tb-l {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .pt {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--tx)
+    }
+
+    .ps {
+      font-size: .72rem;
+      color: var(--tx2);
+      margin-top: 1px
+    }
+
+    .tb-r {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .hbg {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--tx);
+      font-size: 1.1rem;
+      padding: 6px
+    }
+
+    .sbar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg);
+      border: 1.5px solid var(--bd);
+      border-radius: 99px;
+      padding: 6px 14px;
+      min-width: 170px;
+      transition: border var(--tr)
+    }
+
+    .sbar:focus-within {
+      border-color: var(--p)
+    }
+
+    .sbar input {
+      border: none;
+      background: none;
+      outline: none;
+      font-size: .8rem;
+      color: var(--tx);
+      flex: 1
+    }
+
+    .ib {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: var(--bg);
+      border: 1.5px solid var(--bd);
+      color: var(--tx2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .82rem;
+      transition: all var(--tr)
+    }
+
+    .ib:hover {
+      background: var(--pbg);
+      border-color: var(--p);
+      color: var(--p)
+    }
+
+    .apibtn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 99px;
+      padding: 7px 15px;
+      font-size: .76rem;
+      font-weight: 600;
+      transition: all var(--tr);
+      box-shadow: 0 2px 8px rgba(139, 92, 246, .3)
+    }
+
+    .apibtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(139, 92, 246, .4)
+    }
+
+    /* CONTENT */
+    .ct {
+      flex: 1;
+      padding: 22px
+    }
+
+    .pg {
+      display: none
+    }
+
+    .pg.on {
+      display: block
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--cd);
+      border-radius: var(--r);
+      border: 1px solid var(--bd);
+      box-shadow: var(--sh);
+      transition: box-shadow var(--tr)
+    }
+
+    .card:hover {
+      box-shadow: var(--shm)
+    }
+
+    .cb {
+      padding: 18px
+    }
+
+    .ch {
+      padding: 16px 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .ct2 {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--tx);
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .ct2 i {
+      color: var(--p)
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #064e3b 0%, #065f46 35%, #047857 70%, #059669 100%);
+      border-radius: var(--r);
+      padding: 32px 28px;
+      color: #fff;
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .hbadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, .14);
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 99px;
+      padding: 4px 12px;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .4px;
+      margin-bottom: 14px
+    }
+
+    .hbadge span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: blink 2s infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .ht {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 8px
+    }
+
+    .hs {
+      font-size: .85rem;
+      opacity: .82;
+      max-width: 420px;
+      line-height: 1.6
+    }
+
+    .hcta {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap
+    }
+
+    .hbp {
+      background: #fff;
+      color: #065f46;
+      border: none;
+      border-radius: 99px;
+      padding: 10px 22px;
+      font-size: .82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--tr);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .14)
+    }
+
+    .hbp:hover {
+      transform: translateY(-2px)
+    }
+
+    .hbo {
+      background: rgba(255, 255, 255, .11);
+      color: #fff;
+      border: 1.5px solid rgba(255, 255, 255, .32);
+      border-radius: 99px;
+      padding: 10px 22px;
+      font-size: .82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--tr)
+    }
+
+    .hbo:hover {
+      background: rgba(255, 255, 255, .18)
+    }
+
+    /* STATS */
+    .sg {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px
+    }
+
+    .sc {
+      background: var(--cd);
+      border-radius: var(--r);
+      border: 1px solid var(--bd);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--tr);
+      box-shadow: var(--sh)
+    }
+
+    .sc:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shm)
+    }
+
+    .sc::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--ac, var(--p))
+    }
+
+    .si2 {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: var(--ib2, var(--pbg));
+      color: var(--ic, var(--p));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      margin-bottom: 12px
+    }
+
+    .sv {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--tx);
+      line-height: 1
+    }
+
+    .sl {
+      font-size: .72rem;
+      color: var(--tx2);
+      margin-top: 4px;
+      font-weight: 500
+    }
+
+    .sch {
+      font-size: .68rem;
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600
+    }
+
+    .sch.up {
+      color: #22c55e
+    }
+
+    .sch.dn {
+      color: #ef4444
+    }
+
+    /* GRIDS */
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px
+    }
+
+    .g21 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px
+    }
+
+    /* QUICK ACTIONS */
+    .qa {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 22px
+    }
+
+    .qac {
+      background: var(--cd);
+      border: 1.5px solid var(--bd);
+      border-radius: var(--r);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all var(--tr);
+      text-align: center;
+      box-shadow: var(--sh)
+    }
+
+    .qac:hover {
+      border-color: var(--p);
+      background: var(--pbg);
+      transform: translateY(-3px);
+      box-shadow: var(--shm)
+    }
+
+    .qi {
+      width: 50px;
+      height: 50px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: transform var(--tr)
+    }
+
+    .qac:hover .qi {
+      transform: scale(1.1)
+    }
+
+    .ql {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--tx)
+    }
+
+    .qs {
+      font-size: .68rem;
+      color: var(--tx2)
+    }
+
+    /* ALERT ITEMS */
+    .ai {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px;
+      border-radius: var(--r2);
+      background: var(--bg);
+      margin-bottom: 7px;
+      transition: all var(--tr);
+      border: 1px solid var(--bd)
+    }
+
+    .ai:hover {
+      background: var(--pbg);
+      border-color: var(--pl)
+    }
+
+    .adot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .ain {
+      flex: 1
+    }
+
+    .ain .n {
+      font-size: .8rem;
+      font-weight: 600
+    }
+
+    .ain .d {
+      font-size: .7rem;
+      color: var(--tx2);
+      margin-top: 2px
+    }
+
+    .rt {
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: .67rem;
+      font-weight: 700;
+      white-space: nowrap
+    }
+
+    .rH {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .rM {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .rL {
+      background: #d1fae5;
+      color: #065f46
+    }
+
+    /* FORMS */
+    .fg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px
+    }
+
+    .fgp {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .fgp label {
+      font-size: .76rem;
+      font-weight: 600;
+      color: var(--tx);
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .fgp label i {
+      color: var(--p);
+      font-size: .72rem
+    }
+
+    .fc {
+      width: 100%;
+      padding: 10px 13px;
+      background: var(--bg);
+      border: 1.5px solid var(--bd);
+      border-radius: var(--r2);
+      font-size: .83rem;
+      color: var(--tx);
+      outline: none;
+      transition: all var(--tr)
+    }
+
+    .fc:focus {
+      border-color: var(--p);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, .1)
+    }
+
+    .fc::placeholder {
+      color: var(--tx3)
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: none;
+      border-radius: var(--r2);
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--tr);
+      white-space: nowrap
+    }
+
+    .btp {
+      background: linear-gradient(135deg, var(--pd), var(--p));
+      color: #fff;
+      padding: 11px 20px;
+      box-shadow: 0 2px 8px rgba(22, 163, 74, .28)
+    }
+
+    .btp:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(22, 163, 74, .38)
+    }
+
+    .btf {
+      width: 100%;
+      justify-content: center;
+      padding: 12px
+    }
+
+    .bts {
+      padding: 6px 12px;
+      font-size: .76rem;
+      border-radius: 8px
+    }
+
+    .bto {
+      background: transparent;
+      color: var(--p);
+      border: 1.5px solid var(--p);
+      padding: 7px 14px
+    }
+
+    .bto:hover {
+      background: var(--pbg)
+    }
+
+    .btd {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: .76rem;
+      border-radius: 8px
+    }
+
+    .btv {
+      background: linear-gradient(135deg, #15803d, #22c55e);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: .76rem;
+      border-radius: 8px
+    }
+
+    .btsms {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #fff;
+      padding: 6px 11px;
+      font-size: .73rem;
+      border-radius: 8px
+    }
+
+    /* MAPS */
+    #rmap,
+    #cmap {
+      height: 250px;
+      border-radius: var(--r2);
+      border: 1.5px solid var(--bd);
+      margin-top: 8px
+    }
+
+    .ctag {
+      display: none;
+      margin-top: 7px;
+      background: var(--pbg);
+      border: 1px solid var(--pl);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: .76rem;
+      color: #15803d;
+      font-weight: 500
+    }
+
+    /* UPLOAD */
+    .upz {
+      border: 2px dashed var(--bd);
+      border-radius: var(--r);
+      padding: 32px 18px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--bg);
+      position: relative;
+      transition: all var(--tr)
+    }
+
+    .upz:hover,
+    .upz.dg {
+      border-color: var(--p);
+      background: var(--pbg)
+    }
+
+    .upz input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%
+    }
+
+    .upico {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--pbg), #dcfce7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      margin: 0 auto 10px
+    }
+
+    #imgprev {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: var(--r2);
+      margin-top: 14px;
+      display: none;
+      object-fit: cover;
+      box-shadow: var(--shm)
+    }
+
+    /* DISEASE RESULT */
+    .dres {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border: 1.5px solid #fbbf24;
+      border-radius: var(--r);
+      padding: 18px;
+      margin-top: 14px;
+      display: none;
+      animation: fu .4s ease
+    }
+
+    @keyframes fu {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .dn {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #92400e;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .cw {
+      margin-bottom: 12px
+    }
+
+    .cl {
+      display: flex;
+      justify-content: space-between;
+      font-size: .76rem;
+      font-weight: 600;
+      margin-bottom: 5px
+    }
+
+    .ctr {
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .cb2 {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .9s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .rb {
+      border-radius: var(--r2);
+      padding: 11px 13px;
+      font-size: .8rem;
+      line-height: 1.6;
+      margin-bottom: 7px
+    }
+
+    .rb.tr {
+      background: #dcfce7;
+      border-left: 3px solid #16a34a
+    }
+
+    .rb.ip {
+      background: #dbeafe;
+      border-left: 3px solid #2563eb
+    }
+
+    .rb.og {
+      background: #fae8ff;
+      border-left: 3px solid #9333ea
+    }
+
+    .rb strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: .76rem
+    }
+
+    /* WEATHER */
+    .whc {
+      background: linear-gradient(135deg, #0c4a6e, #075985, #0369a1);
+      border-radius: var(--r);
+      padding: 22px;
+      color: #fff;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden
+    }
+
+    .whc::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .05)
+    }
+
+    .wmr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px
+    }
+
+    .wtb {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .wdesc {
+      font-size: .83rem;
+      opacity: .8;
+      margin-top: 3px
+    }
+
+    .wix {
+      font-size: 3.5rem;
+      opacity: .9
+    }
+
+    .wsr {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px
+    }
+
+    .ws {
+      background: rgba(255, 255, 255, .11);
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: var(--r2);
+      padding: 10px;
+      text-align: center
+    }
+
+    .wsv {
+      font-size: 1.1rem;
+      font-weight: 700
+    }
+
+    .wsl {
+      font-size: .66rem;
+      opacity: .8;
+      margin-top: 2px
+    }
+
+    .rb2 {
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--r2);
+      padding: 11px 14px;
+      font-weight: 700;
+      font-size: .88rem;
+      margin-top: 12px
+    }
+
+    .rb2.HIGH {
+      background: rgba(239, 68, 68, .14);
+      border: 1.5px solid rgba(239, 68, 68, .35);
+      color: #fca5a5
+    }
+
+    .rb2.MEDIUM {
+      background: rgba(245, 158, 11, .14);
+      border: 1.5px solid rgba(245, 158, 11, .35);
+      color: #fcd34d
+    }
+
+    .rb2.LOW {
+      background: rgba(34, 197, 94, .14);
+      border: 1.5px solid rgba(34, 197, 94, .35);
+      color: #86efac
+    }
+
+    .rat {
+      font-size: .78rem;
+      font-weight: 400;
+      margin-top: 5px;
+      opacity: .9;
+      line-height: 1.55
+    }
+
+    .fs {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px
+    }
+
+    .fd {
+      background: var(--cd);
+      border-radius: var(--r2);
+      padding: 9px 5px;
+      text-align: center;
+      border: 1px solid var(--bd);
+      font-size: .7rem;
+      transition: all var(--tr)
+    }
+
+    .fd:hover {
+      border-color: var(--p);
+      background: var(--pbg)
+    }
+
+    .fdd {
+      color: var(--tx2);
+      font-weight: 600;
+      margin-bottom: 3px
+    }
+
+    .fdi {
+      font-size: 1.1rem;
+      margin: 3px 0
+    }
+
+    .fdt {
+      font-weight: 700;
+      color: var(--tx)
+    }
+
+    .fdr {
+      color: var(--sky);
+      margin-top: 2px
+    }
+
+    /* TABLE */
+    .tw {
+      overflow-x: auto;
+      border-radius: var(--r2)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .78rem
+    }
+
+    thead tr {
+      background: linear-gradient(135deg, #064e3b, #065f46)
+    }
+
+    thead th {
+      color: #d1fae5;
+      font-weight: 600;
+      font-size: .72rem;
+      padding: 11px 14px;
+      text-align: left;
+      white-space: nowrap;
+      letter-spacing: .3px
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--bd);
+      transition: background var(--tr)
+    }
+
+    tbody tr:hover {
+      background: var(--bg)
+    }
+
+    tbody td {
+      padding: 11px 14px;
+      vertical-align: middle
+    }
+
+    .fc2 .nm {
+      font-weight: 600;
+      font-size: .81rem
+    }
+
+    .fc2 .lc {
+      font-size: .68rem;
+      color: var(--tx2);
+      margin-top: 2px
+    }
+
+    .sp2 {
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: .67rem;
+      font-weight: 700
+    }
+
+    .spn {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .spv {
+      background: #d1fae5;
+      color: #065f46
+    }
+
+    .spr {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .ac {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap
+    }
+
+    .bbar {
+      background: linear-gradient(135deg, #065f46, #16a34a);
+      border-radius: var(--r);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .bbl {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff
+    }
+
+    .bbl h3 {
+      font-size: .88rem;
+      font-weight: 700
+    }
+
+    .bbl p {
+      font-size: .73rem;
+      opacity: .8;
+      margin-top: 1px
+    }
+
+    .bcompose {
+      display: none;
+      background: var(--cd);
+      border: 1.5px solid var(--bd);
+      border-radius: var(--r);
+      padding: 14px;
+      margin-bottom: 14px;
+      animation: fu .3s ease
+    }
+
+    .bta {
+      width: 100%;
+      padding: 11px;
+      min-height: 80px;
+      border: 1.5px solid var(--bd);
+      border-radius: var(--r2);
+      font-size: .82rem;
+      resize: vertical;
+      background: var(--bg);
+      color: var(--tx);
+      outline: none;
+      margin-bottom: 8px
+    }
+
+    .bta:focus {
+      border-color: var(--p)
+    }
+
+    /* CHAT */
+    .chat-wrap {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 18px;
+      height: calc(100vh - 140px)
+    }
+
+    .cm {
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--r);
+      border: 1px solid var(--bd);
+      background: var(--cd);
+      overflow: hidden
+    }
+
+    .ctop {
+      padding: 13px 15px;
+      background: linear-gradient(135deg, #064e3b, #065f46);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .cav {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem
+    }
+
+    .ctop .ci h4 {
+      font-size: .86rem;
+      font-weight: 700
+    }
+
+    .ctop .ci p {
+      font-size: .68rem;
+      opacity: .8
+    }
+
+    .odot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      margin-left: auto;
+      box-shadow: 0 0 6px #4ade80
+    }
+
+    .msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #f8fafc
+    }
+
+    .mr {
+      display: flex;
+      gap: 7px;
+      align-items: flex-end
+    }
+
+    .mr.u {
+      flex-direction: row-reverse
+    }
+
+    .ma {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .8rem
+    }
+
+    .ma.bot {
+      background: linear-gradient(135deg, #064e3b, #16a34a);
+      color: #fff
+    }
+
+    .ma.usr {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: #fff
+    }
+
+    .bub {
+      max-width: 70%;
+      padding: 9px 13px;
+      border-radius: 13px;
+      font-size: .82rem;
+      line-height: 1.5;
+      word-wrap: break-word
+    }
+
+    .bub.bot {
+      background: #fff;
+      border: 1px solid var(--bd);
+      border-bottom-left-radius: 3px;
+      color: var(--tx)
+    }
+
+    .bub.usr {
+      background: linear-gradient(135deg, #15803d, #22c55e);
+      color: #fff;
+      border-bottom-right-radius: 3px
+    }
+
+    .bub.thk {
+      color: #94a3b8;
+      font-style: italic
+    }
+
+    .mt {
+      font-size: .62rem;
+      color: var(--tx3);
+      margin-top: 3px;
+      text-align: right
+    }
+
+    .cia {
+      padding: 12px 14px;
+      border-top: 1px solid var(--bd);
+      background: var(--cd);
+      display: flex;
+      gap: 7px;
+      align-items: flex-end
+    }
+
+    .cinp {
+      flex: 1;
+      border: 1.5px solid var(--bd);
+      border-radius: 11px;
+      padding: 9px 13px;
+      font-size: .83rem;
+      resize: none;
+      background: var(--bg);
+      color: var(--tx);
+      outline: none;
+      max-height: 90px;
+      transition: border var(--tr)
+    }
+
+    .cinp:focus {
+      border-color: var(--p)
+    }
+
+    .vbtn {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: #fff;
+      border: none;
+      font-size: .95rem;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, .32);
+      transition: all var(--tr);
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .vbtn:hover {
+      transform: scale(1.07)
+    }
+
+    .vbtn.ls {
+      animation: vp 1s infinite;
+      background: linear-gradient(135deg, #dc2626, #ef4444)
+    }
+
+    @keyframes vp {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, .4)
+      }
+
+      50% {
+        box-shadow: 0 0 0 9px rgba(239, 68, 68, 0)
+      }
+    }
+
+    .sbtn {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #15803d, #22c55e);
+      color: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .95rem;
+      transition: all var(--tr)
+    }
+
+    .sbtn:hover {
+      transform: scale(1.07)
+    }
+
+    .csp {
+      background: var(--cd);
+      border-radius: var(--r);
+      border: 1px solid var(--bd);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      overflow-y: auto
+    }
+
+    .cbl {
+      padding: 10px;
+      background: var(--bg);
+      border-radius: var(--r2);
+      border: 1px solid var(--bd)
+    }
+
+    .clb {
+      font-size: .67rem;
+      font-weight: 700;
+      color: var(--tx2);
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 6px
+    }
+
+    .clv {
+      font-size: .8rem;
+      color: var(--tx);
+      font-weight: 500
+    }
+
+    /* MODAL */
+    .mo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .5);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 14px
+    }
+
+    .mo.op {
+      display: flex
+    }
+
+    .md {
+      background: var(--cd);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid var(--bd);
+      animation: mi .3s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    @keyframes mi {
+      from {
+        opacity: 0;
+        transform: scale(.94)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    .mh {
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .mhi {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem
+    }
+
+    .mh h3 {
+      font-size: .92rem;
+      font-weight: 700;
+      color: var(--tx)
+    }
+
+    .mclose {
+      margin-left: auto;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      color: var(--tx2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      transition: all var(--tr)
+    }
+
+    .mclose:hover {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444
+    }
+
+    .mb {
+      padding: 18px 22px
+    }
+
+    .ag {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--bd)
+    }
+
+    .ag:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0
+    }
+
+    .agt {
+      font-size: .69rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--tx2);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .af {
+      margin-bottom: 7px
+    }
+
+    .af label {
+      font-size: .73rem;
+      font-weight: 600;
+      color: var(--tx);
+      display: block;
+      margin-bottom: 3px
+    }
+
+    .af input {
+      width: 100%;
+      padding: 8px 11px;
+      border: 1.5px solid var(--bd);
+      border-radius: 7px;
+      font-size: .8rem;
+      color: var(--tx);
+      background: var(--bg);
+      outline: none;
+      transition: border var(--tr)
+    }
+
+    .af input:focus {
+      border-color: var(--pu)
+    }
+
+    .af small {
+      font-size: .66rem;
+      color: var(--tx3);
+      margin-top: 2px;
+      display: block
+    }
+
+    /* TOAST */
+    .ts {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .to {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 11px 16px;
+      border-radius: 11px;
+      font-size: .8rem;
+      font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 190px;
+      max-width: 310px;
+      animation: ti .3s ease;
+      border-left: 3px solid var(--p)
+    }
+
+    .to.er {
+      border-color: #ef4444
+    }
+
+    .to.wn {
+      border-color: #f59e0b
+    }
+
+    .to.ok {
+      border-color: #22c55e
+    }
+
+    @keyframes ti {
+      from {
+        opacity: 0;
+        transform: translateX(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    .sbo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .5);
+      z-index: 99
+    }
+
+    .sbo.op {
+      display: block
+    }
+
+    .mhi2 {
+      font-size: .7rem;
+      color: var(--tx2);
+      margin-top: 1px
+    }
+
+    .sh2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px
+    }
+
+    .sh2 h2 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--tx)
+    }
+
+    .sh2 p {
+      font-size: .76rem;
+      color: var(--tx2);
+      margin-top: 2px
+    }
+
+    .dv {
+      height: 1px;
+      background: var(--bd);
+      margin: 16px 0
+    }
+
+    .mhint {
+      font-size: .7rem;
+      color: var(--tx3);
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    @media(max-width:1100px) {
+      .sg {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .chat-wrap {
+        grid-template-columns: 1fr
+      }
+
+      .csp {
+        display: none
+      }
+    }
+
+    @media(max-width:900px) {
+
+      .g2,
+      .g21 {
+        grid-template-columns: 1fr
+      }
+
+      .qa {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .fs {
+        grid-template-columns: repeat(4, 1fr)
+      }
+    }
+
+    @media(max-width:768px) {
+      .sb {
+        transform: translateX(-100%)
+      }
+
+      .sb.op {
+        transform: translateX(0)
+      }
+
+      .wrap {
+        margin-left: 0
+      }
+
+      .hbg {
+        display: flex
+      }
+
+      .sbar {
+        display: none
+      }
+
+      .ht {
+        font-size: 1.5rem
+      }
+
+      .ct {
+        padding: 14px
+      }
+
+      .sg {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .qa {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .ts {
+        bottom: 14px;
+        right: 10px;
+        left: 10px
+      }
+
+      .to {
+        min-width: unset;
+        max-width: 100%
+      }
+    }
+
+    @media(max-width:480px) {
+      .ht {
+        font-size: 1.25rem
+      }
+
+      .fs {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    /* LANGUAGE TOGGLE */
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      background: var(--pbg);
+      border: 1.5px solid var(--p);
+      border-radius: 99px;
+      overflow: hidden;
+      font-size: .72rem;
+      font-weight: 700
+    }
+
+    .lang-btn span {
+      padding: 5px 10px;
+      cursor: pointer;
+      color: var(--tx2);
+      transition: all .2s
+    }
+
+    .lang-btn span.active {
+      background: var(--p);
+      color: #fff
+    }
+
+    /* PEST MODULE */
+    .pest-info {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px
+    }
+
+    .pest-info h4 {
+      font-size: .85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--tx)
+    }
+
+    .pest-info p {
+      font-size: .78rem;
+      color: var(--tx2);
+      line-height: 1.6
+    }
+
+    .etl-bar-wrap {
+      margin: 12px 0
+    }
+
+    .etl-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .72rem;
+      color: var(--tx2);
+      margin-bottom: 5px
+    }
+
+    .etl-bar {
+      height: 14px;
+      background: var(--bd);
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .etl-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .6s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .trap-log {
+      margin-top: 18px
+    }
+
+    .trap-log-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--bd);
+      font-size: .78rem
+    }
+
+    .trap-log-item:last-child {
+      border-bottom: none
+    }
+
+    /* WEATHER GRID */
+    .wpgrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 12px 0
+    }
+
+    .wpc {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center
+    }
+
+    .wpc-v {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--tx)
+    }
+
+    .wpc-l {
+      font-size: .65rem;
+      color: var(--tx2);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .78rem;
+      margin-top: 10px
+    }
+
+    .risk-table th {
+      text-align: left;
+      padding: 7px 10px;
+      background: var(--bg);
+      color: var(--tx2);
+      font-weight: 600;
+      font-size: .68rem;
+      text-transform: uppercase
+    }
+
+    .risk-table td {
+      padding: 7px 10px;
+      border-top: 1px solid var(--bd)
+    }
+
+    /* ROLE DASHBOARDS */
+    .my-farm-banner {
+      background: linear-gradient(135deg, #064e3b, #065f46);
+      border-radius: var(--r);
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 16px;
+      align-items: center
+    }
+
+    .my-farm-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0
+    }
+
+    .officer-banner {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border-radius: var(--r);
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 18px
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sbo" id="sbo" onclick="csb()"></div>
+  <aside class="sb" id="sb">
+    <div class="sb-brand">
+      <div class="sb-logo">&#127807;</div>
+      <div>
+        <h1>CropGuard AI</h1>
+        <p id="roleLabel">Smart Crop Health Platform</p>
+      </div>
+    </div>
+    <!-- FARMER SECTION -->
+    <div class="sb-sec">My Farm</div>
+    <div class="ni on" onclick="sp('home',this)"><i class="fa fa-chart-line"></i> Dashboard</div>
+    <div class="ni farmer-only" onclick="sp('reg',this)"><i class="fa fa-user-plus"></i> Register Farm</div>
+    <div class="sb-sec">Detection &amp; Risk</div>
+    <div class="ni" onclick="sp('det',this)"><i class="fa fa-microscope"></i> Disease Detection</div>
+    <div class="ni" onclick="sp('wth',this)"><i class="fa fa-cloud-sun-rain"></i> Weather &amp; Risk</div>
+    <div class="ni farmer-only" onclick="sp('trap',this)"><i class="fa fa-bug"></i> Pest Traps</div>
+    <div class="ni farmer-only" onclick="sp('cht',this)"><i class="fa fa-robot"></i> AI Advisor</div>
+    <!-- OFFICER SECTION -->
+    <div class="sb-sec officer-only" style="display:none">Surveillance</div>
+    <div class="ni officer-only" onclick="sp('trap',this)" style="display:none"><i class="fa fa-bug"></i> Pest
+      Monitoring</div>
+    <div class="ni officer-only" onclick="sp('map',this)" style="display:none"><i class="fa fa-map-location-dot"></i>
+      Disease Hotspot Map</div>
+    <div class="ni officer-only" id="ni-ofc" onclick="sp('ofc',this)" style="display:none"><i
+        class="fa fa-shield-halved"></i> District Authority <span class="nbadge" id="pb">2</span></div>
+    <div class="sb-sec officer-only" style="display:none">AI Tools</div>
+    <div class="ni officer-only" onclick="sp('cht',this)" style="display:none"><i class="fa fa-robot"></i> AI Advisor
+    </div>
+    <div class="ni officer-only" onclick="sp('reg',this)" style="display:none"><i class="fa fa-user-plus"></i> Register
+      Farmer</div>
+    <div class="sb-foot">
+      <div id="roleCard"
+        style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:9px">
+        <div id="roleIcon"
+          style="width:32px;height:32px;border-radius:8px;background:#16a34a;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0">
+          &#128068;</div>
+        <div>
+          <p id="roleNameLbl" style="font-size:.73rem;color:#cbd5e1;font-weight:600">Farmer</p><span id="roleDesc"
+            style="font-size:.6rem;color:#64748b">Basic access</span>
+        </div>
+        <button onclick="logoutRole()" title="Switch role"
+          style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,.15);color:#64748b;border-radius:6px;padding:3px 7px;font-size:.65rem;cursor:pointer">&#x21BB;</button>
+      </div>
+      <div class="sp">
+        <div class="sdot" id="sdot" style="background:#f59e0b"></div>
+        <div class="si">
+          <p id="slbl">Demo Mode</p><span id="ssub">No API keys</span>
+        </div>
+        <span class="bdemo" id="mbadge">DEMO</span>
+      </div>
+      <button onclick="cm2('pitchm')" style="width:100%;margin-top:10px;background:linear-gradient(135deg, #3b82f6, #2563eb);color:#fff;border:none;padding:10px;border-radius:8px;font-size:.75rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px">
+        <i class="fa fa-microphone"></i> 1-Min Technical Pitch
+      </button>
+    </div>
+  </aside>
+  <div class="wrap">
+    <header class="tb">
+      <div class="tb-l">
+        <button class="hbg" onclick="osb()"><i class="fa fa-bars"></i></button>
+        <div>
+          <div class="pt" id="ptitle">Dashboard</div>
+          <div class="ps" id="psub">Overview of your crop health network</div>
+        </div>
+      </div>
+      <div class="sbar"><i class="fa fa-search" style="color:var(--tx3)"></i><input type="text"
+          placeholder="Search farmers, crops..."></div>
+      <div class="tb-r">
+        <div class="lang-btn" id="langBtn">
+          <span id="lbHi" onclick="setLang('hi')" class="active">HI</span>
+          <span id="lbEn" onclick="setLang('en')">EN</span>
+        </div>
+        <button class="ib" onclick="tdk()" title="Dark mode"><i class="fa fa-moon" id="dkico"></i></button>
+        <button class="ib"><i class="fa fa-bell"></i></button>
+        <button class="apibtn" onclick="om('apm')"><i class="fa fa-key"></i> API Keys</button>
+      </div>
+    </header>
+    <div class="ct">
+      <!-- HOME -->
+      <section class="pg on" id="pg-home">
+        <!-- FARMER VIEW -->
+        <div id="homeF">
+          <div class="my-farm-banner" id="myFarmBanner">
+            <div class="my-farm-icon"><i class="fa fa-seedling"></i></div>
+            <div style="flex:1">
+              <div style="font-size:.7rem;opacity:.7;margin-bottom:3px" data-hi="मेरी फसल" data-en="My Farm Profile">My
+                Farm Profile</div>
+              <div style="font-size:1.1rem;font-weight:700" id="myCropName">No farm registered yet</div>
+              <div style="font-size:.75rem;opacity:.8;margin-top:3px" id="myFarmLoc">Register your farm to get started
+              </div>
+            </div>
+            <button onclick="sp('reg',null)"
+              style="background:rgba(255,255,255,.18);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:10px;padding:8px 14px;font-size:.78rem;font-weight:600;cursor:pointer"
+              data-hi="खेत जोड़ें" data-en="Add Farm">Add Farm</button>
+          </div>
+          <div class="sg">
+            <div class="sc" style="--ac:#16a34a">
+              <div class="si2" style="--ib2:#dcfce7;--ic:#16a34a"><i class="fa fa-leaf"></i></div>
+              <div class="sv" id="myf1">--</div>
+              <div class="sl" data-hi="मेरी फसल" data-en="My Crop">My Crop</div>
+              <div class="sch up" id="myf1s">--</div>
+            </div>
+            <div class="sc" style="--ac:#f59e0b">
+              <div class="si2" style="--ib2:#fef3c7;--ic:#d97706"><i class="fa fa-virus"></i></div>
+              <div class="sv" id="myf2">--</div>
+              <div class="sl" data-hi="अंतिम रोग" data-en="Last Disease">Last Disease</div>
+              <div class="sch" id="myf2s">--</div>
+            </div>
+            <div class="sc" style="--ac:#0ea5e9">
+              <div class="si2" style="--ib2:#e0f2fe;--ic:#0284c7"><i class="fa fa-cloud-sun"></i></div>
+              <div class="sv" id="myf3">--</div>
+              <div class="sl" data-hi="मौसम जोखिम" data-en="Weather Risk">Weather Risk</div>
+              <div class="sch" id="myf3s">--</div>
+            </div>
+            <div class="sc" style="--ac:#8b5cf6">
+              <div class="si2" style="--ib2:#ede9fe;--ic:#7c3aed"><i class="fa fa-calendar-check"></i></div>
+              <div class="sv" id="myf4">--</div>
+              <div class="sl" data-hi="बुवाई की तारीख" data-en="Sowing Date">Sowing Date</div>
+              <div class="sch" id="myf4s">--</div>
+            </div>
+          </div>
+          <div class="sh2">
+            <div>
+              <h2 data-hi="त्वरित कार्य" data-en="Quick Actions">Quick Actions</h2>
+              <p style="font-size:.76rem;color:var(--tx2)" data-hi="आपके काम यहाँ हैं"
+                data-en="Common tasks at your fingertips">Common tasks at your fingertips</p>
+            </div>
+          </div>
+          <div class="qa">
+            <div class="qac" onclick="sp('reg',null)">
+              <div class="qi" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#16a34a"><i
+                  class="fa fa-user-plus"></i></div>
+              <div class="ql" data-hi="खेत रजिस्टर" data-en="Register Farm">Register Farm</div>
+              <div class="qs" data-hi="GPS + विवरण" data-en="Add farmer + GPS">Add farmer + GPS</div>
+            </div>
+            <div class="qac" onclick="sp('det',null)">
+              <div class="qi" style="background:linear-gradient(135deg,#fef9c3,#fef08a);color:#ca8a04"><i
+                  class="fa fa-microscope"></i></div>
+              <div class="ql" data-hi="रोग पहचानें" data-en="Detect Disease">Detect Disease</div>
+              <div class="qs" data-hi="पत्ता फोटो अपलोड" data-en="Upload leaf photo">Upload leaf photo</div>
+            </div>
+            <div class="qac" onclick="sp('wth',null)">
+              <div class="qi" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0284c7"><i
+                  class="fa fa-cloud-sun-rain"></i></div>
+              <div class="ql" data-hi="मौसम जोखिम" data-en="Weather Risk">Weather Risk</div>
+              <div class="qs" data-hi="लाइव + 7-दिन पूर्वानुमान" data-en="Live + 7-day forecast">Live + 7-day forecast
+              </div>
+            </div>
+            <div class="qac" onclick="sp('cht',null)">
+              <div class="qi" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#7c3aed"><i
+                  class="fa fa-robot"></i></div>
+              <div class="ql" data-hi="AI सलाहकार" data-en="AI Advisor">AI Advisor</div>
+              <div class="qs" data-hi="हिंदी और अंग्रेजी" data-en="Hindi & English">Hindi &amp; English</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch">
+              <div class="ct2"><i class="fa fa-bell"></i> <span data-hi="हाल के अलर्ट" data-en="Recent Alerts">Recent
+                  Alerts</span></div>
+            </div>
+            <div class="cb">
+              <div id="ralerts"></div>
+            </div>
+          </div>
+        </div>
+        <!-- OFFICER VIEW -->
+        <div id="homeO" style="display:none">
+          <div class="officer-banner">
+            <div style="font-size:.7rem;opacity:.7;margin-bottom:5px;letter-spacing:1px;text-transform:uppercase"
+              data-hi="जिला प्राधिकरण" data-en="District Authority">District Authority</div>
+            <div style="font-size:1.3rem;font-weight:800;margin-bottom:4px" data-hi="नेटवर्क अवलोकन"
+              data-en="Network Overview">Network Overview</div>
+            <div style="font-size:.8rem;opacity:.8" data-hi="जिले में सभी पंजीकृत किसानों का डेटा"
+              data-en="Live data from all registered farms in district">Live data from all registered farms in district
+            </div>
+          </div>
+          <div class="sg">
+            <div class="sc" style="--ac:#16a34a">
+              <div class="si2" style="--ib2:#dcfce7;--ic:#16a34a"><i class="fa fa-users"></i></div>
+              <div class="sv" id="s1">0</div>
+              <div class="sl" data-hi="पंजीकृत किसान" data-en="Registered Farmers">Registered Farmers</div>
+              <div class="sch up"><i class="fa fa-arrow-up"></i> <span data-hi="इस सीजन में"
+                  data-en="Active this season">Active this season</span></div>
+            </div>
+            <div class="sc" style="--ac:#f59e0b">
+              <div class="si2" style="--ib2:#fef3c7;--ic:#d97706"><i class="fa fa-triangle-exclamation"></i></div>
+              <div class="sv" id="s2">2</div>
+              <div class="sl" data-hi="सक्रिय अलर्ट" data-en="Active Alerts">Active Alerts</div>
+              <div class="sch dn"><i class="fa fa-circle-exclamation"></i> <span data-hi="ध्यान चाहिए"
+                  data-en="Needs attention">Needs attention</span></div>
+            </div>
+            <div class="sc" style="--ac:#ef4444">
+              <div class="si2" style="--ib2:#fee2e2;--ic:#dc2626"><i class="fa fa-virus"></i></div>
+              <div class="sv" id="s3">1</div>
+              <div class="sl" data-hi="उच्च जोखिम खेत" data-en="High Risk Farms">High Risk Farms</div>
+              <div class="sch dn"><i class="fa fa-fire"></i> <span data-hi="तुरंत कार्रवाई"
+                  data-en="Immediate action">Immediate action</span></div>
+            </div>
+            <div class="sc" style="--ac:#0ea5e9">
+              <div class="si2" style="--ib2:#e0f2fe;--ic:#0284c7"><i class="fa fa-circle-check"></i></div>
+              <div class="sv" id="s4">2</div>
+              <div class="sl" data-hi="सत्यापित रिपोर्ट" data-en="Validated Reports">Validated Reports</div>
+              <div class="sch up"><i class="fa fa-check"></i> <span data-hi="अधिकारी सत्यापित"
+                  data-en="Officer verified">Officer verified</span></div>
+            </div>
+          </div>
+          <div class="g2">
+            <div class="card">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-bell"></i> <span data-hi="नेटवर्क अलर्ट"
+                    data-en="Network Alerts">Network Alerts</span></div><button class="btn bts bto"
+                  onclick="sp('ofc',null)" data-hi="सभी देखें" data-en="View All">View All</button>
+              </div>
+              <div class="cb">
+                <div id="ralerts"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-circle-info"></i> <span data-hi="मंच की जानकारी"
+                    data-en="Platform Info">Platform Info</span></div>
+              </div>
+              <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+                <div class="cbl">
+                  <div class="clb" data-hi="मौसम" data-en="WEATHER">WEATHER</div>
+                  <div class="clv"><i class="fa fa-cloud-sun"></i> Open-Meteo &mdash; FREE</div>
+                </div>
+                <div class="cbl">
+                  <div class="clb" data-hi="SMS अलर्ट" data-en="SMS ALERTS">SMS ALERTS</div>
+                  <div class="clv"><i class="fa fa-comment-sms"></i> Twilio &mdash; Optional</div>
+                </div>
+                <div class="cbl">
+                  <div class="clb" data-hi="रोग AI" data-en="DISEASE AI">DISEASE AI</div>
+                  <div class="clv"><i class="fa fa-microscope"></i> Kindwise API</div>
+                </div>
+                <div class="cbl">
+                  <div class="clb" data-hi="KCC हेल्पलाइन" data-en="KCC HELPLINE">KCC HELPLINE</div>
+                  <div class="clv" style="color:var(--p);font-weight:700"><i class="fa fa-phone"></i> 1800-180-1551
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /homeO -->
+      </section>
+      <!-- REGISTER -->
+      <section class="pg" id="pg-reg">
+        <div class="sh2">
+          <div>
+            <h2><i class="fa fa-user-plus" style="color:var(--p)"></i> <span data-hi="किसान पंजीकरण"
+                data-en="Register Farmer">Register Farmer</span></h2>
+            <p style="font-size:.76rem;color:var(--tx2)" data-hi="नेटवर्क में नया किसान जोड़ें"
+              data-en="Add a new farmer to the monitoring network">Add a new farmer to the monitoring network</p>
+          </div>
+        </div>
+        <div class="g21">
+          <div class="card">
+            <div class="ch">
+              <div class="ct2"><i class="fa fa-user"></i> <span data-hi="किसान विवरण" data-en="Farmer Details">Farmer
+                  Details</span></div>
+            </div>
+            <div class="cb">
+              <form id="rf" onsubmit="regF(event)">
+                <div class="fg" style="margin-bottom:14px">
+                  <div class="fgp"><label><i class="fa fa-user"></i> Full Name *</label><input class="fc" id="fn"
+                      placeholder="Ramesh Kumar" required></div>
+                  <div class="fgp"><label><i class="fa fa-phone"></i> Mobile (+91) *</label><input class="fc" id="fm"
+                      placeholder="+919876543210" required></div>
+                  <div class="fgp"><label><i class="fa fa-house"></i> Village *</label><input class="fc" id="fv"
+                      placeholder="Rampur" required></div>
+                  <div class="fgp"><label><i class="fa fa-location-dot"></i> District *</label><input class="fc" id="fd"
+                      placeholder="Lucknow" required></div>
+                  <div class="fgp"><label><i class="fa fa-seedling"></i> Primary Crop *</label>
+                    <select class="fc" id="fc2" required>
+                      <option value="">Select...</option>
+                      <option>Wheat</option>
+                      <option>Rice/Paddy</option>
+                      <option>Tomato</option>
+                      <option>Cotton</option>
+                      <option>Potato</option>
+                      <option>Onion</option>
+                      <option>Maize</option>
+                      <option>Sugarcane</option>
+                      <option>Soybean</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div class="fgp"><label><i class="fa fa-leaf"></i> Crop Variety</label><input class="fc" id="fcv"
+                      placeholder="e.g. Arka Rakshak"></div>
+                  <div class="fgp"><label><i class="fa fa-layer-group"></i> Crop Stage *</label>
+                    <select class="fc" id="fcs" required>
+                      <option value="">Select...</option>
+                      <option value="Seedling">Seedling (0-30 days)</option>
+                      <option value="Vegetative">Vegetative (30-60 days)</option>
+                      <option value="Flowering">Flowering (60-90 days)</option>
+                      <option value="Fruiting">Fruiting/Grain Filling</option>
+                      <option value="Mature">Mature/Harvest</option>
+                    </select>
+                  </div>
+                  <div class="fgp"><label><i class="fa fa-mound"></i> Soil Type *</label>
+                    <select class="fc" id="fst" required>
+                      <option value="">Select...</option>
+                      <option value="Loamy">Loamy (दोमट)</option>
+                      <option value="Clay">Clay (चिकनी)</option>
+                      <option value="Sandy">Sandy (बलुई)</option>
+                      <option value="Black">Black Soil (काली मिट्टी)</option>
+                      <option value="Red">Red Soil (लाल मिट्टी)</option>
+                    </select>
+                  </div>
+                  <div class="fgp"><label><i class="fa fa-calendar-days"></i> Sowing Date *</label><input class="fc"
+                      type="date" id="fsd" required></div>
+                  <div class="fgp"><label><i class="fa fa-history"></i> Previous Crop History (Last
+                      Season)</label><input class="fc" id="fpch" placeholder="e.g. Wheat"></div>
+                  <div class="fgp"><label><i class="fa fa-bullseye"></i> Current Year Planning / Target</label><input
+                      class="fc" id="fcyp" placeholder="e.g. Target 10 quintals, Organic Manure"></div>
+                  <div class="fgp"><label><i class="fa fa-language"></i> Language</label>
+                    <select class="fc" id="fl">
+                      <option value="hi">Hindi (हिंदी)</option>
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn btp btf"><i class="fa fa-check"></i> Register Farmer</button>
+              </form>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch">
+              <div class="ct2"><i class="fa fa-map-pin"></i> <span data-hi="खेत GPS स्थान"
+                  data-en="Farm GPS Location">Farm GPS Location</span></div>
+            </div>
+            <div class="cb">
+              <!-- GPS Auto-detect button -->
+              <button type="button" id="regGpsBtn" onclick="autoLocateReg()" class="btn btf"
+                style="width:100%;margin-bottom:10px;background:var(--pbg);color:var(--p);border:1.5px solid var(--p);display:flex;align-items:center;gap:8px;justify-content:center">
+                <i class="fa fa-location-crosshairs"></i> <span data-hi="GPS से स्वचालित स्थान"
+                  data-en="Auto-detect via GPS">Auto-detect via GPS</span>
+              </button>
+              <p style="font-size:.76rem;color:var(--tx2);margin-bottom:6px" data-hi="या नक्शे पर क्लिक करें"
+                data-en="Or click map to pin farm location">Or click map to pin farm location</p>
+              <div id="rmap"></div>
+              <div class="mhint"><i class="fa fa-circle-info"></i> <span data-hi="मार्कर रखने के लिए नक्शे पर टैप करें"
+                  data-en="Tap map to place marker">Tap map to place marker</span></div>
+              <div class="ctag" id="gps"></div>
+              <input type="hidden" id="flat"><input type="hidden" id="flon">
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- DETECT -->
+      <section class="pg" id="pg-det">
+        <div class="sh2">
+          <div>
+            <h2>&#128269; Disease Detection</h2>
+            <p style="font-size:.76rem;color:var(--tx2)">AI-powered leaf disease diagnosis via Kindwise API</p>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="ch">
+              <div class="ct2"><i class="fa fa-upload"></i> Upload Leaf Image</div>
+            </div>
+            <div class="cb">
+              <div class="upz" id="upz">
+                <input type="file" id="lf" accept="image/*" capture="environment" onchange="prevImg(event)">
+                <div class="upico" id="upico">&#127807;</div>
+                <div style="font-weight:600">Upload Leaf Image</div>
+                <div style="font-size:.7rem;opacity:.7">Supported: JPG, PNG (Max 5MB)</div>
+                <img id="imgprev"
+                  style="width:100%;height:100%;object-fit:cover;display:none;position:absolute;top:0;left:0"
+                  alt="preview">
+              </div>
+              <button class="btn btp btf" style="margin-top:15px" onclick="doDetect(false)"><i
+                  class="fa fa-microscope"></i> Analyze Leaf (New)</button>
+              <div style="display:flex;gap:10px;margin-top:10px">
+                <select id="followUpDay" class="fc" style="flex:1;background:var(--bg);color:var(--tx)">
+                  <option value="3">Day 3 Follow-up</option>
+                  <option value="7">Day 7 Follow-up</option>
+                  <option value="14">Day 14 Follow-up</option>
+                </select>
+                <button class="btn btf" style="flex:2;background:var(--bg);color:var(--tx);border:1px solid var(--bd)"
+                  onclick="doDetect(true)"><i class="fa fa-clock-rotate-left"></i> Scan (Compare)</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="dres" id="dres">
+              <div id="dcon"></div>
+            </div>
+            <div class="card" style="display:none;margin-top:14px" id="wad">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-cloud-sun"></i> Weather Risk at Your Farm</div>
+              </div>
+              <div class="cb" id="wadc"></div>
+            </div>
+            <div class="card" id="dpla">
+              <div class="cb" style="text-align:center;padding:44px 18px;color:var(--tx2)">
+                <div style="font-size:2.8rem;margin-bottom:10px;opacity:.25">&#128269;</div>
+                <p style="font-size:.83rem">Upload leaf &amp; click <b>Analyze</b> to see results</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- WEATHER -->
+      <section class="pg" id="pg-wth">
+        <div class="sh2">
+          <div>
+            <h2>&#127783; Weather &amp; Risk Dashboard</h2>
+            <p style="font-size:.76rem;color:var(--tx2)">Powered by Open-Meteo &mdash; 100% FREE, no API key needed</p>
+          </div>
+        </div>
+        <div class="g21">
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-location-crosshairs"></i> Farm Location</div>
+              </div>
+              <div class="cb">
+                <!-- City Search -->
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <input class="fc" id="wcity" placeholder="Type city or village name (e.g. Lucknow, Rampur)..."
+                    style="flex:1" onkeydown="if(event.key==='Enter')searchCity()">
+                  <button class="btn btp" onclick="searchCity()"><i class="fa fa-search"></i></button>
+                </div>
+                <!-- GPS Button -->
+                <button class="btn btf" id="gpsWBtn" onclick="autoLocateW()"
+                  style="width:100%;margin-bottom:12px;background:var(--pbg);color:var(--p);border:1.5px solid var(--p);display:flex;align-items:center;gap:8px;justify-content:center">
+                  <i class="fa fa-location-crosshairs"></i> Use My GPS Location (Auto-Detect)
+                </button>
+                <div id="wlocDisp"
+                  style="display:none;background:var(--pbg);border:1px solid var(--p);border-radius:8px;padding:8px 12px;font-size:.8rem;color:var(--tx);margin-bottom:12px">
+                  <i class="fa fa-location-dot" style="color:var(--p)"></i> <span id="wlocName">Detected location</span>
+                </div>
+                <!-- Manual Lat/Lon -->
+                <div style="display:flex;gap:12px;margin-bottom:12px">
+                  <div style="flex:1"><label style="font-size:0.75rem;color:var(--tx2);font-weight:600">Latitude</label><input type="number" class="fc" id="wlat" placeholder="26.84" step="any" style="margin-top:4px"></div>
+                  <div style="flex:1"><label style="font-size:0.75rem;color:var(--tx2);font-weight:600">Longitude</label><input type="number" class="fc" id="wlon" placeholder="80.94" step="any" style="margin-top:4px"></div>
+                </div>
+                <div class="fgp" style="margin-bottom:12px"><label>Disease Confidence % (from detection
+                    step)</label><input class="fc" type="number" id="wconf" placeholder="0" min="0" max="100" value="0">
+                </div>
+                <button class="btn btp btf" onclick="fetchW()"><i class="fa fa-satellite-dish"></i> Get Live Weather
+                  &amp; Risk</button>
+              </div>
+            </div>
+            <div id="wres"></div>
+            <div class="card" style="display:none" id="fcard">
+              <div class="ch" style="margin-bottom:14px">
+                <div class="ct2"><i class="fa fa-calendar-week"></i> 7-Day Forecast</div>
+              </div>
+              <div class="cb">
+                <div class="fs" id="fgrid"></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="card">
+              <div class="cb">
+                <div class="clb" style="margin-bottom:10px">RISK SCORING</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#fee2e2;border-radius:8px">
+                    <span style="color:#dc2626"><i class="fa fa-circle"></i></span><span
+                      style="font-size:.75rem;color:#991b1b"><b>HIGH</b> (7-9): Humidity &gt;80% + Temp
+                      &gt;35&deg;</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#fef3c7;border-radius:8px">
+                    <span style="color:#d97706"><i class="fa fa-circle"></i></span><span
+                      style="font-size:.75rem;color:#92400e"><b>MEDIUM</b> (4-6): Humidity 60-80%</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#d1fae5;border-radius:8px">
+                    <span style="color:#16a34a"><i class="fa fa-circle"></i></span><span
+                      style="font-size:.75rem;color:#065f46"><b>LOW</b> (1-3): Conditions safe</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="cb">
+                <div class="clb" style="margin-bottom:8px">OPEN-METEO API</div>
+                <p style="font-size:.78rem;color:var(--tx);line-height:1.6">&#127783; <b>100% Free</b><br><span
+                    style="color:var(--tx2)">No API key &bull; Real-time data &bull; 7-day forecast &bull; Works
+                    globally</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- PEST TRAP PAGE -->
+      <section class="pg" id="pg-trap">
+        <div class="sh2">
+          <div>
+            <h2><i class="fa fa-bug" style="color:#d97706"></i> <span data-hi="कीट जाल निगरानी"
+                data-en="Pest Trap Monitoring">Pest Trap Monitoring</span></h2>
+            <p style="font-size:.76rem;color:var(--tx2)" data-hi="ETL आधारित कीट जोखिम मूल्यांकन"
+              data-en="Economic Threshold Level (ETL) based risk assessment">Economic Threshold Level (ETL) based risk
+              assessment</p>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="cb">
+              <form onsubmit="recordTrap(event)">
+                <div class="fg">
+                  <div class="fgp"><label><i class="fa fa-hashtag"></i> <span data-hi="ट्रैप ID" data-en="Trap ID">Trap
+                        ID</span></label><input class="fc" id="trpid" placeholder="e.g. TRAP-001" required></div>
+                  <div class="fgp"><label><i class="fa fa-bug"></i> <span data-hi="कीट प्रकार" data-en="Pest Type">Pest
+                        Type</span></label>
+                    <select class="fc" id="trppest" onchange="showPestInfo()">
+                      <option value="Pink Bollworm">Pink Bollworm (गुलाबी सुंडी)</option>
+                      <option value="Whitefly">Whitefly (सफेद मक्खी)</option>
+                      <option value="Fall Armyworm">Fall Armyworm (फॉल आर्मीवर्म)</option>
+                      <option value="Fruit Borer">Fruit Borer (फल छेदक)</option>
+                      <option value="Aphid">Aphid (माहू)</option>
+                      <option value="Mealybug">Mealybug (मिलीबग)</option>
+                      <option value="Thrips">Thrips (थ्रिप्स)</option>
+                      <option value="Stem Borer">Stem Borer (तना छेदक)</option>
+                    </select>
+                  </div>
+                  <div class="fgp"><label><i class="fa fa-calendar"></i> <span data-hi="तारीख"
+                        data-en="Date">Date</span></label><input class="fc" type="date" id="trpdate" required></div>
+                  <div class="fgp"><label><i class="fa fa-calculator"></i> <span data-hi="कीट संख्या (7 दिन)"
+                        data-en="Insects Counted (7 days)">Insects Counted (7 days)</span></label><input class="fc"
+                      type="number" id="trpcount" min="0" required></div>
+                </div>
+                <div class="pest-info" id="pestInfoBox">
+                  <h4 id="pestInfoTitle">Select a pest to see info</h4>
+                  <p id="pestInfoDesc">--</p>
+                </div>
+                <button type="submit" class="btn btp btf"><i class="fa fa-chart-bar"></i> <span
+                    data-hi="ट्रैप डेटा विश्लेषण" data-en="Analyze Trap Data">Analyze Trap Data</span></button>
+              </form>
+              <div id="trapRes" style="margin-top:15px;display:none"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-chart-line" style="color:#d97706"></i> <span data-hi="ETL स्थिति"
+                    data-en="ETL Status">ETL Status</span></div>
+              </div>
+              <div class="cb">
+                <div id="etlGauge">
+                  <p style="color:var(--tx2);font-size:.8rem">Submit a trap reading to see ETL status.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch">
+                <div class="ct2"><i class="fa fa-clock-rotate-left"></i> <span data-hi="पिछले पठन"
+                    data-en="Historical Readings">Historical Readings</span></div>
+              </div>
+              <div class="cb">
+                <div class="trap-log" id="trapLog">
+                  <p style="color:var(--tx2);font-size:.8rem">No readings recorded yet.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- MAP -->
+      <section class="pg" id="pg-map">
+        <div class="sh2">
+          <div style="font-weight:700">Disease Map</div>
+          <div style="font-size:.8rem;color:var(--tx2)">Live hotspot tracking & District Surveillance</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:15px">
+          <input id="mlocInput" class="fc" style="flex:1" placeholder="Search village for hotspots...">
+          <button class="btn btp" onclick="searchLoc('mlocInput')"><i class="fa fa-search"></i> Focus</button>
+        </div>
+        <div id="mhotspot"></div>
+        <div style="display:flex;gap:15px">
+          <div class="card" style="flex:2;margin-bottom:14px">
+            <div style="height:450px;border-radius:var(--r)" id="cmap"></div>
+          </div>
+          <div class="card" style="flex:1;max-height:450px;overflow-y:auto;padding:15px">
+            <h4 style="margin-bottom:10px">Village Hotspots</h4>
+            <div id="mvilList" style="font-size:0.85rem"></div>
+          </div>
+        </div>
+        <div id="mlist" class="g2" style="margin-top:20px"></div>
+      </section>
+      <!-- OFFICER -->
+      <section class="pg" id="pg-ofc">
+        <div class="sh2">
+          <div>
+            <h2>&#128737; District Authority Dashboard</h2>
+            <p style="font-size:.76rem;color:var(--tx2)">Surveillance, Expert Validation & Alerts</p>
+          </div>
+        </div>
+
+        <!-- HIERARCHY FILTER -->
+        <div style="background:var(--cd);padding:14px;border-radius:var(--r);border:1px solid var(--bd);margin-bottom:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="font-weight:700;font-size:.8rem;color:var(--tx2)"><i class="fa fa-filter"></i> Filters:</div>
+          <select class="fc" style="width:150px;padding:6px;font-size:.75rem"><option>District: All</option><option>Lucknow</option><option>Kanpur</option></select>
+          <select class="fc" style="width:150px;padding:6px;font-size:.75rem"><option>Block: All</option><option>Block A</option><option>Block B</option></select>
+          <select class="fc" style="width:150px;padding:6px;font-size:.75rem"><option>Village: All</option><option>Rampur</option><option>Kalyanpur</option></select>
+          <button class="btn btp bts"><i class="fa fa-search"></i> Apply</button>
+        </div>
+
+        <!-- NEW: DISTRICT CROP HEALTH -->
+        <div class="g2" style="margin-bottom:20px">
+          <div class="card" style="background:linear-gradient(135deg, #0f172a, #1e293b); color:white; overflow:hidden; position:relative;">
+            <div style="position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:rgba(255,255,255,0.05);border-radius:50%"></div>
+            <div class="ch" style="border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px">
+              <div class="ct2" style="color:#fff"><i class="fa fa-map-location-dot" style="color:#4ade80"></i> DISTRICT CROP HEALTH</div>
+            </div>
+            <div class="cb" style="display:flex;gap:20px;flex-wrap:wrap">
+              <div style="flex:1; border-right:1px solid rgba(255,255,255,0.1); padding-right:15px; min-width:140px">
+                <div style="display:flex; flex-direction:column; gap:12px; margin-top:5px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-left:30px"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e"></div> <span style="font-size:.7rem;color:#86efac;letter-spacing:1px">LOW</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-left:20px"><div style="width:10px;height:10px;border-radius:50%;background:#eab308;box-shadow:0 0 6px #eab308"></div> <span style="font-size:.75rem;color:#fde047;letter-spacing:1px">WATCH</span></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-left:10px"><div style="width:12px;height:12px;border-radius:50%;background:#f97316;box-shadow:0 0 8px #f97316"></div> <span style="font-size:.8rem;color:#fdba74;letter-spacing:1px">ALERT</span></div>
+                  <div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border-radius:50%;background:#ef4444;box-shadow:0 0 12px #ef4444"></div> <span style="font-weight:800;font-size:.85rem;color:#fca5a5;letter-spacing:1px">HIGH-RISK CLUSTER</span></div>
+                </div>
+              </div>
+              <div style="flex:1; min-width:140px">
+                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:4px"><span>Rice</span> <span style="font-weight:700;color:#e2e8f0">42 reports</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05);padding-bottom:4px"><span>Wheat</span> <span style="font-weight:700;color:#e2e8f0">18 reports</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:12px"><span>Tomato</span> <span style="font-weight:700;color:#e2e8f0">11 reports</span></div>
+                
+                <div style="font-size:.75rem;color:#4ade80"><i class="fa fa-arrow-trend-up"></i> Disease trend increasing</div>
+                <div style="font-size:.75rem;color:#fca5a5;margin-top:6px"><i class="fa fa-fire"></i> 3 High-risk villages identified</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="ch"><div class="ct2"><i class="fa fa-chart-pie"></i> Surveillance Stats</div></div>
+            <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+              <div>
+                <div style="font-size:.65rem;color:var(--tx2);text-transform:uppercase;letter-spacing:1px">Affected Area</div>
+                <div style="font-size:1.4rem;font-weight:800;color:var(--tx)">1,250 <span style="font-size:.7rem;font-weight:600;color:var(--tx2)">Hectares</span></div>
+              </div>
+              <div>
+                <div style="font-size:.65rem;color:var(--tx2);text-transform:uppercase;letter-spacing:1px">Avg AI Confidence</div>
+                <div style="font-size:1.4rem;font-weight:800;color:var(--p)">89.4%</div>
+              </div>
+              <div>
+                <div style="font-size:.65rem;color:var(--tx2);text-transform:uppercase;letter-spacing:1px">Expert Validated</div>
+                <div style="font-size:1.4rem;font-weight:800;color:var(--tx)">85% <span style="font-size:.7rem;font-weight:600;color:var(--tx2)">of cases</span></div>
+              </div>
+              <div>
+                <div style="font-size:.65rem;color:var(--tx2);text-transform:uppercase;letter-spacing:1px">Active Hotspots</div>
+                <div style="font-size:1.4rem;font-weight:800;color:#ef4444">12</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="stats" style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap"></div>
+        <!-- ALL REGISTERED FARMERS TABLE -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="ch">
+            <div class="ct2"><i class="fa fa-users" style="color:var(--p)"></i> <span data-hi="सभी पंजीकृत किसान" data-en="All Registered Farmers">All Registered Farmers</span></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="fSearch" class="fc" style="width:180px;padding:6px 10px;font-size:.76rem" placeholder="Search name, village..." oninput="filterFarmers()">
+              <button class="btn bts bto" onclick="exportCSV()"><i class="fa fa-download"></i> CSV</button>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.78rem" id="farmerTable">
+              <thead><tr style="background:var(--bg);border-bottom:2px solid var(--bd)">
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2);white-space:nowrap">#</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="नाम" data-en="Name">Name</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="मोबाइल" data-en="Mobile">Mobile</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="गाँव" data-en="Village">Village</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="जिला" data-en="District">District</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="फसल" data-en="Crop">Crop</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="अवस्था" data-en="Stage">Stage</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="रोग" data-en="Disease">Disease</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="आत्मविश्वास" data-en="Conf%">Conf%</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="जोखिम" data-en="Risk">Risk</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)" data-hi="स्थिति" data-en="Status">Status</th>
+                <th style="padding:10px 12px;text-align:left;font-weight:700;color:var(--tx2)"></th>
+              </tr></thead>
+              <tbody id="farmerTbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;gap:15px;flex-wrap:wrap">
+          <div style="flex:1;min-width:300px">
+            <div class="card">
+              <div class="ch" style="margin-bottom:14px">
+                <div class="ct2"><i class="fa fa-triangle-exclamation" style="color:#f59e0b"></i> <span
+                    data-hi="विशेषज्ञ समीक्षा लंबित" data-en="Pending Expert Review">Pending Expert Review</span></div>
+              </div>
+              <div class="cb" style="padding-top:0" id="penlist"></div>
+            </div>
+          </div>
+          <div style="flex:1;min-width:300px">
+            <div class="card">
+              <div class="ch" style="margin-bottom:14px">
+                <div class="ct2"><i class="fa fa-check-double" style="color:#16a34a"></i> <span data-hi="फील्ड पुष्टि"
+                    data-en="Field Confirmation">Field Confirmation</span></div>
+              </div>
+              <div class="cb" style="padding-top:0" id="vallist"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bbar" style="margin-top:20px">
+          <div class="bbl">
+            <div
+              style="width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+              &#128242;</div>
+            <div>
+              <h3>Multi-Channel Broadcast Center</h3>
+              <p>Send to SMS & Telegram</p>
+            </div>
+          </div>
+          <button class="btn bts"
+            style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)"
+            onclick="tbulk()"><i class="fa fa-broadcast-tower"></i> Broadcast Alert</button>
+        </div>
+        <div class="bcompose" id="bcomp">
+          <div style="font-size:.85rem;font-weight:700;margin-bottom:10px"><i class="fa fa-pen"></i> Compose Broadcast
+          </div>
+          <textarea class="bta"
+            id="bmsg">[CropGuard Alert] High disease risk detected in your area. Inspect crops immediately and apply preventive spray. KCC Helpline: 1800-180-1551</textarea>
+          <button class="btn btp" onclick="sendBulk()"><i class="fa fa-paper-plane"></i> Send to All Farmers</button>
+        </div>
+      </section>
+      <!-- CHAT -->
+      <section class="pg" id="pg-cht">
+        <div class="sh2">
+          <div>
+            <h2>&#129302; AI Crop Advisor</h2>
+            <p style="font-size:.76rem;color:var(--tx2)">Ask in Hindi or English &mdash; expert agricultural advice</p>
+          </div>
+        </div>
+        <div class="chat-wrap">
+          <div class="cm">
+            <div class="ctop">
+              <div class="cav">&#129302;</div>
+              <div class="ci">
+                <h4>CropGuard AI</h4>
+                <p>Agricultural Expert &bull; Hindi &amp; English</p>
+              </div>
+              <div class="odot"></div>
+            </div>
+            <div class="msgs" id="chatmsgs">
+              <div class="mr">
+                <div class="ma bot"><i class="fa fa-robot"></i></div>
+                <div>
+                  <div class="bub bot">Namaste! &#127807; Main <b>CropGuard AI</b> hoon. Apni fasal ke baare mein koi
+                    bhi sawaal Hindi ya English mein poochhein.<br><br>Hello! Ask me anything about crop diseases,
+                    treatments, or farming best practices!</div>
+                  <div class="mt">Just now</div>
+                </div>
+              </div>
+            </div>
+            <div class="cia">
+              <textarea class="cinp" id="cinp" rows="1" placeholder="Type in Hindi or English..."></textarea>
+              <button class="vbtn" id="vbtn" onclick="tvoc()" title="Voice"><i class="fa fa-microphone"></i></button>
+              <button class="sbtn" onclick="sendChat()"><i class="fa fa-paper-plane"></i></button>
+            </div>
+          </div>
+          <div class="csp">
+            <div style="font-size:.86rem;font-weight:700;color:var(--tx)"><i class="fa fa-circle-info"
+                style="color:var(--p)"></i> Farm Context</div>
+            <div class="cbl">
+              <div class="clb">Farmer</div>
+              <div class="clv" id="ctx1">None yet</div>
+            </div>
+            <div class="cbl">
+              <div class="clb">Crop</div>
+              <div class="clv" id="ctx2">Unknown</div>
+            </div>
+            <div class="cbl">
+              <div class="clb">Disease</div>
+              <div class="clv" id="ctx3">Not detected</div>
+            </div>
+            <div class="cbl">
+              <div class="clb">Weather Risk</div>
+              <div class="clv" id="ctx4">Fetch weather first</div>
+            </div>
+            <div class="dv"></div>
+            <div class="clb">QUICK PROMPTS</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:7px">
+              <button class="btn bts bto" onclick="qp('What fungicide to use for wheat rust?')">Wheat rust
+                treatment</button>
+              <button class="btn bts bto"
+                onclick="qp('\u092e\u0947\u0930\u0940 \u092b\u0938\u0932 \u092a\u0930 \u0915\u0940\u0921\u093c\u0947 \u0932\u0917 \u0917\u090f \u0939\u0948\u0902')">&#127807;
+                Hindi query</button>
+              <button class="btn bts bto" onclick="qp('How to prevent rice blast?')">Rice blast prevention</button>
+              <button class="btn bts bto" onclick="qp('IPM techniques for cotton pest')">Cotton IPM</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <!-- API MODAL -->
+  <div class="mo" id="apm">
+    <div class="md">
+      <div class="mh">
+        <div class="mhi"><i class="fa fa-key"></i></div>
+        <h3>API Keys &amp; Configuration</h3>
+        <div class="mhi2">Keys are saved in your browser. Edit .env for backend.</div><button class="mclose"
+          onclick="cm2('apm')"><i class="fa fa-xmark"></i></button>
+      </div>
+      <div class="mb">
+        <div class="ag">
+          <div class="agt"><i class="fa fa-cloud" style="color:#0ea5e9"></i> Open-Meteo Weather</div>
+          <div
+            style="font-size:.78rem;color:var(--tx2);background:var(--bg);padding:9px 11px;border-radius:8px;border:1px solid var(--bd)">
+            &#10003; 100% FREE &mdash; No key needed! Weather always works automatically.</div>
+        </div>
+        <div class="ag">
+          <div class="agt"><i class="fa fa-comment-sms" style="color:#e74c3c"></i> Twilio SMS (Optional)</div>
+          <div class="af"><label>Account SID</label><input id="kts"
+              placeholder="ACxxxxxxxxxxxxxxxx" /><small>console.twilio.com &rarr; Dashboard</small></div>
+          <div class="af"><label>Auth Token</label><input type="password" id="ktt" placeholder="Your auth token" />
+          </div>
+          <div class="af"><label>From Number</label><input id="ktf" placeholder="+1XXXXXXXXXX" /></div>
+        </div>
+        <div class="ag">
+          <div class="agt"><i class="fa fa-leaf" style="color:#16a34a"></i> Kindwise Disease Detection</div>
+          <div class="af"><label>API Key</label><input type="password" id="kkw"
+              placeholder="Your crop.health key" /><small>crop.health &rarr; API Keys (free tier available)</small>
+          </div>
+        </div>
+        <div class="ag">
+          <div class="agt"><i class="fa fa-robot" style="color:#10a37f"></i> OpenAI Chatbot</div>
+          <div class="af"><label>API Key</label><input type="password" id="koa"
+              placeholder="sk-..." /><small>platform.openai.com/api-keys</small></div>
+        </div>
+        <div class="ag">
+          <div class="agt"><i class="fa fa-volume-high" style="color:#8b5cf6"></i> ElevenLabs Voice (Optional)</div>
+          <div class="af"><label>API Key</label><input type="password" id="kel" placeholder="Your ElevenLabs key" />
+          </div>
+          <div class="af"><label>Voice ID</label><input id="kev" placeholder="21m00Tcm4TlvDq8ikWAM" /><small>Default:
+              Rachel (multilingual)</small></div>
+          <div class="af"><label>Agent ID</label><input id="kea" placeholder="agent_..." /><small>For Conversational
+              AI</small></div>
+        </div>
+        <div class="ag">
+          <div class="agt"><i class="fa fa-server" style="color:#0ea5e9"></i> Backend URL</div>
+          <div class="af"><label>Server URL</label><input id="kbe" placeholder="http://localhost:3000" /><small>Leave
+              blank for browser demo mode</small></div>
+        </div>
+        <button class="btn btp btf" style="margin-top:4px" onclick="saveK()"><i class="fa fa-floppy-disk"></i> Save
+          Configuration</button>
+      </div>
+    </div>
+  </div>
+  <!-- LOGIN MODAL -->
+  <div class="mo op" id="loginm" style="z-index:9999;background:var(--bg)">
+    <div class="md" style="text-align:center;padding:40px 20px;border:none;max-width:420px">
+      <div style="font-size:3.5rem;margin-bottom:10px">🌱</div>
+      <h2 style="font-size:1.8rem;font-weight:800;color:var(--tx);margin-bottom:5px">CropGuard AI</h2>
+      <p style="color:var(--tx2);font-size:.85rem;margin-bottom:30px">Select your role to continue</p>
+      <div style="display:flex;flex-direction:column;gap:15px;max-width:340px;margin:0 auto">
+        <button class="btn btp btf"
+          style="padding:18px;font-size:1rem;border-radius:14px;display:flex;align-items:center;gap:12px"
+          onclick="loginAs('farmer')">
+          <span style="font-size:1.6rem">&#128068;</span>
+          <div style="text-align:left">
+            <div style="font-weight:700">Farmer Login</div>
+            <div style="font-size:.75rem;opacity:.8;font-weight:400">Disease detection, weather, AI advisor</div>
+          </div>
+        </button>
+        <button class="btn btf"
+          style="padding:18px;font-size:1rem;background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border-radius:14px;display:flex;align-items:center;gap:12px;border:1.5px solid #475569"
+          onclick="loginAs('officer')">
+          <span style="font-size:1.6rem">&#128737;</span>
+          <div style="text-align:left">
+            <div style="font-weight:700">District Authority Login</div>
+            <div style="font-size:.75rem;opacity:.8;font-weight:400">Full surveillance, validation, broadcast alerts
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- REVIEW MODAL -->
+  <div class="mo" id="reviewm" style="z-index:9999;background:rgba(15,23,42,.8)">
+    <div class="md">
+      <div class="mh">
+        <h3><i class="fa fa-user-doctor"></i> Expert Validation</h3><button class="mclose" onclick="cm2('reviewm')"><i
+            class="fa fa-xmark"></i></button>
+      </div>
+      <div class="mb" id="reviewc"></div>
+    </div>
+  </div>
+
+  <!-- PITCH MODAL -->
+  <div class="mo" id="pitchm" style="z-index:9999;background:rgba(15,23,42,.8)">
+    <div class="md" style="max-width:650px">
+      <div class="mh">
+        <h3><i class="fa fa-microphone"></i> 1-Minute Technical Explanation</h3>
+        <button class="mclose" onclick="cm2('pitchm')"><i class="fa fa-xmark"></i></button>
+      </div>
+      <div class="mb" style="font-size:1rem;line-height:1.7;color:var(--tx)">
+        <p><strong>“Sir, our system works at three intelligence levels — farm, community and government.</strong></p>
+        <p><strong>At farm level</strong>, the farmer uploads a crop image and provides crop context. Computer vision models such as EfficientNet or MobileNet perform disease classification, while YOLO can detect pests.</p>
+        <p>Then, we combine this visual evidence with weather, IoT environmental data, crop stage, variety, historical disease pressure and nearby reports. XGBoost acts as the primary tabular risk model to estimate farm-level risk.</p>
+        <p><strong>At community level</strong>, if a disease event is sufficiently confident or validated, PostGIS identifies nearby relevant farms. We then match same or susceptible crops and evaluate distance, crop stage, weather, environmental conditions and disease severity to estimate elevated risk.</p>
+        <p><strong>At government level</strong>, spatial and temporal clustering can identify potential hotspots, which are then reviewed by agriculture officers or experts.</p>
+        <p>Finally, validated cases generate targeted warnings and local-language IPM advisories, while follow-up observations create a quality-controlled feedback loop for model evaluation and improvement.”</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ts" id="ts"></div>
+  <script>
+    const K = { ts: '', tt: '', tf: '', kw: '', oa: '', el: '', ev: '21m00Tcm4TlvDq8ikWAM', be: '', ea: '' };
+    const CH = []; const RC = { HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#22c55e' };
+    let farmers = [], rmi = false, cmi = false, rmark = null, cw = null, ld = null, recog = null, isv = false, dark = false;
+    const PM = { home: { t: 'Dashboard', s: 'Overview of your crop health network' }, reg: { t: 'Register Farmer', s: 'Add a new farmer to the network' }, det: { t: 'Disease Detection', s: 'AI-powered leaf disease diagnosis' }, wth: { t: 'Weather & Risk', s: 'Live weather + risk scoring (Open-Meteo FREE)' }, trap: { t: 'Pest Trap Module', s: 'Monitor pest populations & ETL thresholds' }, map: { t: 'Community Map', s: 'Disease hotspots across your region' }, ofc: { t: 'Officer Dashboard', s: 'Validate reports & send SMS alerts' }, cht: { t: 'AI Crop Advisor', s: 'Expert advice in Hindi & English' } };
+    const MR = [
+      { id: 1, name: 'Rajesh Yadav', crop: 'Wheat', disease: 'Wheat Rust', risk: 'HIGH', lat: 26.92, lon: 80.98, village: 'Rampur', district: 'Lucknow', mobile: '+919876543001', confidence: 87, status: 'validated', fieldConfirmed: true, lang: 'hi' },
+      { id: 2, name: 'Sunita Devi', crop: 'Tomato', disease: 'Late Blight', risk: 'MEDIUM', lat: 26.80, lon: 80.91, village: 'Sitapur', district: 'Sitapur', mobile: '+919876543002', confidence: 72, status: 'pending', lang: 'hi' },
+      { id: 3, name: 'Ramesh Patel', crop: 'Cotton', disease: 'Pink Bollworm', risk: 'HIGH', lat: 26.85, lon: 80.95, village: 'Rampur', district: 'Lucknow', mobile: '+919876543003', confidence: 95, status: 'validated', lang: 'en' },
+      { id: 4, name: 'Mohan Singh', crop: 'Rice', disease: 'Brown Spot', risk: 'LOW', lat: 26.88, lon: 80.90, village: 'Rampur', district: 'Lucknow', mobile: '+919876543004', confidence: 60, status: 'pending', lang: 'hi' }
+    ];
+    const MD = [
+      { disease: 'Tomato Late Blight', confidence: 87.3, severity: 'HIGH', treatment: 'Apply Mancozeb 75WP at 2g/L water. Remove infected leaves. Avoid overhead irrigation. Repeat every 10 days.', ipm_advice: 'Scout weekly. Use certified seeds. Apply neem oil (5mL/L) preventively.', organic: 'Spray Bordeaux mixture (1%). Remove and burn infected material.' },
+      { disease: 'Rice Blast', confidence: 79.1, severity: 'HIGH', treatment: 'Apply Tricyclazole 75WP at 0.6g/L. Drain field 3-4 days. Avoid heavy nitrogen.', ipm_advice: 'Use resistant varieties. Remove infected debris. Monitor humidity.', organic: 'Apply Pseudomonas fluorescens 2.5kg/ha.' },
+      { disease: 'Wheat Rust (Yellow)', confidence: 91.5, severity: 'MEDIUM', treatment: 'Apply Propiconazole 25EC at 1mL/L. Spray early morning. Repeat after 15 days.', ipm_advice: 'Plant resistant varieties. Sow early. Remove volunteer wheat.', organic: 'Use Bacillus subtilis biocontrol agent.' },
+      { disease: 'Healthy Plant', confidence: 96.1, severity: 'NONE', treatment: 'No treatment needed. Your plant looks healthy!', ipm_advice: 'Maintain proper spacing, balanced fertilization, and drainage.', organic: 'Continue organic matter application.' }
+    ];
+    function ar() { return [...farmers, ...MR]; }
+    function searchLoc(id) { 
+      const v = document.getElementById(id).value.toLowerCase(); 
+      if (!v) { toast('Enter village to focus', 'wn'); return; } 
+      if (id === 'mlocInput') { 
+        const found = ar().find(r => r.village && r.village.toLowerCase().includes(v));
+        if (found && window.cmapObj) {
+          window.cmapObj.setView([found.lat, found.lon], 13);
+          toast('Focusing map on ' + found.village, 'ok');
+        } else {
+          toast('Village not found', 'wn');
+        }
+      } else { 
+        toast('Fetching weather for ' + v, 'ok'); 
+      } 
+    }
+    const pulsecss = document.createElement('style'); pulsecss.innerHTML = `@keyframes pulsate { 0% {transform: scale(0.1, 0.1); opacity: 0.0;} 50% {opacity: 1.0;} 100% {transform: scale(1.2, 1.2); opacity: 0.0;} } .hspot { border: 3px solid #ef4444; border-radius: 50%; height: 50px; width: 50px; position: absolute; left: -11px; top: -11px; animation: pulsate 2s ease-out; animation-iteration-count: infinite; opacity: 0.0; }`; document.head.appendChild(pulsecss);
+    let userRole = 'farmer';
+    let curLang = 'hi';
+    // --- Multilingual strings ---
+    const LANG_STRINGS = {
+      hi: {
+        noFarm: 'कोई खेत पंजीकृत नहीं', farmerWelcome: 'अपना खेत पंजीकृत करें',
+        detecting: 'विश्लेषण हो रहा है...', analysisOk: 'विश्लेषण पूर्ण!',
+        gpsOk: 'GPS स्थान मिला!', gpsDenied: 'GPS अनुमति नहीं। शहर का नाम टाइप करें।',
+        pestAlert: 'कीट चेतावनी उत्पन्न!', pestSafe: 'ट्रैप रिकॉर्ड हो गया',
+        weatherOk: 'मौसम अपडेट हो गया!', noLoc: 'पहले शहर खोजें या GPS उपयोग करें'
+      },
+      en: {
+        noFarm: 'No farm registered yet', farmerWelcome: 'Register your farm to get started',
+        detecting: 'Analyzing...', analysisOk: 'Analysis complete!',
+        gpsOk: 'GPS location found!', gpsDenied: 'GPS denied. Type city name.',
+        pestAlert: 'Pest Alert Generated!', pestSafe: 'Trap recorded safely',
+        weatherOk: 'Weather updated!', noLoc: 'Search city first or use GPS'
+      }
+    };
+    function t(k) { return LANG_STRINGS[curLang]?.[k] || LANG_STRINGS.en[k] || k; }
+    function setLang(lang) {
+      curLang = lang;
+      localStorage.setItem('cgLang', lang);
+      document.getElementById('lbHi').classList.toggle('active', lang === 'hi');
+      document.getElementById('lbEn').classList.toggle('active', lang === 'en');
+      applyLang();
+    }
+    function applyLang() {
+      document.querySelectorAll('[data-hi]').forEach(el => {
+        const v = el.getAttribute('data-' + curLang) || el.getAttribute('data-en');
+        if (v !== null) el.textContent = v;
+      });
+      // Update dynamic elements
+      updFarmerDash();
+    }
+    function loginAs(role) {
+      userRole = role;
+      document.getElementById('loginm').classList.remove('op');
+      const farmerEls = document.querySelectorAll('.farmer-only');
+      const officerEls = document.querySelectorAll('.officer-only');
+      if (role === 'farmer') {
+        farmerEls.forEach(e => e.style.display = 'flex');
+        officerEls.forEach(e => e.style.display = 'none');
+        document.getElementById('roleLabel').textContent = curLang === 'hi' ? 'किसान व्यू' : 'Farmer View';
+        document.getElementById('roleNameLbl').textContent = curLang === 'hi' ? 'किसान' : 'Farmer';
+        document.getElementById('roleDesc').textContent = curLang === 'hi' ? 'बुनियादी पहुंच' : 'Basic access';
+        document.getElementById('roleIcon').innerHTML = '<i class="fa fa-seedling"></i>';
+        document.getElementById('roleIcon').style.background = '#16a34a';
+        document.getElementById('ni-ofc').style.display = 'none';
+        document.getElementById('homeF').style.display = 'block';
+        document.getElementById('homeO').style.display = 'none';
+      } else {
+        farmerEls.forEach(e => e.style.display = 'none');
+        officerEls.forEach(e => e.style.display = 'flex');
+        document.getElementById('roleLabel').textContent = curLang === 'hi' ? 'जिला प्राधिकरण' : 'District Authority';
+        document.getElementById('roleNameLbl').textContent = curLang === 'hi' ? 'जिला अधिकारी' : 'District Officer';
+        document.getElementById('roleDesc').textContent = curLang === 'hi' ? 'पूर्ण निगरानी' : 'Full surveillance access';
+        document.getElementById('roleIcon').innerHTML = '<i class="fa fa-shield-halved"></i>';
+        document.getElementById('roleIcon').style.background = '#1e293b';
+        document.getElementById('homeF').style.display = 'none';
+        document.getElementById('homeO').style.display = 'block';
+        // Update officer network stats
+        document.getElementById('s1').textContent = ar().length;
+        document.getElementById('s2').textContent = ar().filter(r => r.risk !== 'LOW').length;
+        document.getElementById('s3').textContent = ar().filter(r => r.risk === 'HIGH').length;
+        document.getElementById('s4').textContent = ar().filter(r => r.status === 'validated').length;
+      }
+      toast((curLang === 'hi' ? 'स्वागत है! ' : 'Welcome! ') + (role === 'farmer' ? (curLang === 'hi' ? 'किसान' : 'Farmer') : (curLang === 'hi' ? 'जिला प्राधिकरण' : 'District Authority')), 'ok');
+      rndAlerts();
+      updFarmerDash();
+      applyLang();
+    }
+    function logoutRole() { document.getElementById('loginm').classList.add('op'); }
+    // --- Weather Auto-Location ---
+    async function searchCity() {
+      const city = document.getElementById('wcity').value.trim();
+      if (!city) { toast('City/village name likhein', 'wn'); return; }
+      try {
+        const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+        const d = await r.json();
+        if (!d.results || !d.results.length) { toast('Location nahi mila. Doosra naam try karein.', 'wn'); return; }
+        const loc = d.results[0];
+        document.getElementById('wlat').value = loc.latitude;
+        document.getElementById('wlon').value = loc.longitude;
+        document.getElementById('wlocName').textContent = loc.name + (loc.admin1 ? ', ' + loc.admin1 : '') + (loc.country ? ', ' + loc.country : '');
+        document.getElementById('wlocDisp').style.display = 'block';
+        toast('Location mila: ' + loc.name, 'ok');
+        fetchW();
+      } catch (e) { toast('Search fail. Internet check karein.', 'er'); }
+    }
+    function autoLocateW() {
+      if (!navigator.geolocation) { toast('GPS is browser mein supported nahi', 'wn'); return; }
+      const btn = document.getElementById('gpsWBtn');
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Locating...';
+      btn.disabled = true;
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const lat = pos.coords.latitude.toFixed(5), lon = pos.coords.longitude.toFixed(5);
+        document.getElementById('wlat').value = lat;
+        document.getElementById('wlon').value = lon;
+        // Reverse geocode
+        try {
+          const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=&count=0`);
+          // Use nominatim for reverse geocode
+          const rr = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          const dd = await rr.json();
+          const name = (dd.address && (dd.address.village || dd.address.town || dd.address.city || dd.address.county)) || 'Your Location';
+          document.getElementById('wlocName').textContent = name + ' (GPS)';
+        } catch (_) { document.getElementById('wlocName').textContent = `${lat}, ${lon} (GPS)`; }
+        document.getElementById('wlocDisp').style.display = 'block';
+        btn.innerHTML = '<i class="fa fa-location-crosshairs"></i> Use My GPS Location (Auto-Detect)';
+        btn.disabled = false;
+        toast('GPS location mila!', 'ok');
+        fetchW();
+      }, err => {
+        btn.innerHTML = '<i class="fa fa-location-crosshairs"></i> Use My GPS Location (Auto-Detect)';
+        btn.disabled = false;
+        toast('GPS access denied. City name type karein.', 'wn');
+      }, { timeout: 10000 });
+    }
+    function sp(n, el) {
+      document.querySelectorAll('.pg').forEach(s => s.classList.remove('on'));
+      document.querySelectorAll('.ni').forEach(x => x.classList.remove('on'));
+      document.getElementById('pg-' + n).classList.add('on');
+      if (el) el.classList.add('on');
+      else document.querySelectorAll('.ni').forEach(x => { if (x.getAttribute('onclick') && x.getAttribute('onclick').includes("'" + n + "'")) x.classList.add('on'); });
+      const mObj = PM[n] || {};
+      document.getElementById('ptitle').textContent = mObj.t || n;
+      document.getElementById('psub').textContent = mObj.s || '';
+      if (n === 'reg') setTimeout(initRM, 80);
+      if (n === 'map') initCM();
+      if (n === 'ofc') rndOfc();
+      if (n === 'home') rndAlerts();
+      csb(); window.scrollTo(0, 0);
+      setTimeout(() => {
+        if (window.cmapObj && window.cmapObj.invalidateSize) window.cmapObj.invalidateSize();
+        if (window.rmapObj && window.rmapObj.invalidateSize) window.rmapObj.invalidateSize();
+      }, 300);
+    }
+    function osb() { document.getElementById('sb').classList.add('op'); document.getElementById('sbo').classList.add('op'); }
+    function csb() { document.getElementById('sb').classList.remove('op'); document.getElementById('sbo').classList.remove('op'); }
+    function tdk() { dark = !dark; document.body.setAttribute('data-dark', dark ? '1' : ''); document.body.removeAttribute(dark ? '' : 'data-dark'); document.getElementById('dkico').className = dark ? 'fa fa-sun' : 'fa fa-moon'; }
+    function lk() { try { const s = JSON.parse(localStorage.getItem('cgk') || '{}'); Object.assign(K, s); } catch (_) { } [{ e: 'kts', k: 'ts' }, { e: 'ktt', k: 'tt' }, { e: 'ktf', k: 'tf' }, { e: 'kkw', k: 'kw' }, { e: 'koa', k: 'oa' }, { e: 'kel', k: 'el' }, { e: 'kev', k: 'ev' }, { e: 'kea', k: 'ea' }, { e: 'kbe', k: 'be' }].forEach(({ e, k }) => { const el = document.getElementById(e); if (el) el.value = K[k] || ''; }); ustat(); }
+    function saveK() { K.ts = gv('kts'); K.tt = gv('ktt'); K.tf = gv('ktf'); K.kw = gv('kkw'); K.oa = gv('koa'); K.el = gv('kel'); K.ev = gv('kev') || '21m00Tcm4TlvDq8ikWAM'; K.ea = gv('kea'); K.be = gv('kbe'); localStorage.setItem('cgk', JSON.stringify(K)); cm2('apm'); ustat(); toast('Configuration saved!', 'ok'); initConvAI(); }
+    function gv(id) { return (document.getElementById(id) || {}).value?.trim() || ''; }
+    function ustat() { const n = [K.ts, K.kw, K.oa, K.el].filter(Boolean).length; const d = document.getElementById('sdot'), l = document.getElementById('slbl'), s = document.getElementById('ssub'), b = document.getElementById('mbadge'); if (n > 0) { d.style.background = '#22c55e'; l.textContent = n + '/4 Keys'; s.textContent = 'Live mode'; b.textContent = 'LIVE'; b.className = 'blive'; } else { d.style.background = '#f59e0b'; l.textContent = 'Demo Mode'; s.textContent = 'No API keys'; b.textContent = 'DEMO'; b.className = 'bdemo'; } }
+    function initRM() { if (rmi) return; rmi = true; const m = L.map('rmap').setView([26.84, 80.94], 11); window.rmapObj = m; L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(m); m.on('click', e => { const { lat, lng } = e.latlng; document.getElementById('flat').value = lat.toFixed(6); document.getElementById('flon').value = lng.toFixed(6); const g = document.getElementById('gps'); g.style.display = 'flex'; g.innerHTML = '<i class="fa fa-location-dot"></i> GPS: ' + lat.toFixed(5) + ', ' + lng.toFixed(5); if (rmark) m.removeLayer(rmark); rmark = L.marker([lat, lng]).addTo(m).bindPopup('<b>Farm location</b>').openPopup(); document.getElementById('wlat').value = lat.toFixed(5); document.getElementById('wlon').value = lng.toFixed(5); }); }
+    function initCM() { if (cmi) return; cmi = true; const m = L.map('cmap').setView([26.84, 80.94], 10); window.cmapObj = m; L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(m); let vills = {}; ar().forEach(r => { if (!r.lat || !r.lon) return; const k = r.village; if (!vills[k]) vills[k] = { lat: r.lat, lon: r.lon, count: 0 }; if (r.risk === 'HIGH' || r.risk === 'MEDIUM') vills[k].count++; const c = RC[r.risk] || '#22c55e'; const ico = L.divIcon({ className: '', html: '<div style="width:28px;height:28px;border-radius:50%;background:' + c + ';border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:800">' + r.risk[0] + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] }); L.marker([r.lat, r.lon], { icon: ico }).addTo(m).bindPopup('<div style="font-size:13px"><b>' + r.name + '</b><br>' + r.crop + ' &mdash; <span style="color:' + c + ';font-weight:700">' + r.risk + '</span><br>' + r.disease + '<br><small>' + r.village + ', ' + r.district + '</small></div>'); }); let hh = false; let vlist = ''; Object.keys(vills).forEach(k => { if (vills[k].count >= 2) { hh = true; vlist += `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bd)"><span><b>${k}</b></span><span style="color:#ef4444;font-weight:700">${vills[k].count} Cases</span></div>`; const hico = L.divIcon({ className: '', html: '<div class="hspot"></div>', iconSize: [28, 28], iconAnchor: [14, 14] }); L.marker([vills[k].lat, vills[k].lon], { icon: hico }).addTo(m).bindPopup('<b style="color:#ef4444"><i class="fa fa-triangle-exclamation"></i> Hotspot Zone: ' + k + '</b><br>' + vills[k].count + ' active cases.'); } }); if (hh) { document.getElementById('mhotspot').innerHTML = '<div style="background:#fef2f2;border:1px solid #ef4444;color:#991b1b;padding:12px;border-radius:8px;margin-bottom:15px;font-weight:600"><i class="fa fa-triangle-exclamation"></i> WARNING: Disease Hotspot detected! Check Village list.</div>'; } document.getElementById('mvilList').innerHTML = vlist || '<div style="color:var(--tx2)">No hotspots detected.</div>'; document.getElementById('mlist').innerHTML = ar().map(r => '<div class="card"><div class="cb" style="padding:13px"><div style="display:flex;align-items:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:' + RC[r.risk] + ';flex-shrink:0"></div><div style="flex:1"><div style="font-weight:600;font-size:.83rem">' + r.name + '</div><div style="font-size:.69rem;color:var(--tx2);margin-top:2px">' + r.crop + ' &bull; ' + r.village + ', ' + r.district + '</div></div><span class="rt r' + r.risk[0] + '">' + r.risk + '</span></div><div style="margin-top:7px;font-size:.73rem;color:var(--tx2);background:var(--bg);padding:5px 9px;border-radius:6px">' + r.disease + ' &mdash; ' + r.confidence + '%</div></div></div>').join(''); }
+    function regF(e) { e.preventDefault(); const lat = document.getElementById('flat').value, lon = document.getElementById('flon').value; if (!lat || !lon) { toast('Please click the map to set GPS location', 'wn'); return; } const f = { id: Date.now(), name: gv('fn'), mobile: gv('fm'), village: gv('fv'), district: gv('fd'), crop: document.getElementById('fc2').value, variety: gv('fcv'), stage: document.getElementById('fcs').value, soil: document.getElementById('fst').value, sowingDate: document.getElementById('fsd').value, prevCrop: gv('fpch'), planning: gv('fcyp'), lang: document.getElementById('fl').value, lat, lon, status: 'pending', disease: '', risk: 'LOW', confidence: 0 }; farmers.push(f); localStorage.setItem('cgf', JSON.stringify(farmers)); document.getElementById('s1').textContent = farmers.length; document.getElementById('pb').textContent = ar().filter(r => r.status.startsWith('pending')).length; updCtx(); toast('Farm registered!', 'ok'); e.target.reset(); document.getElementById('gps').style.display = 'none'; cmi = false; sp('det', null); }
+    function prevImg(ev) { const f = ev.target.files[0]; if (!f) return; document.getElementById('imgprev').src = URL.createObjectURL(f); document.getElementById('imgprev').style.display = 'block'; document.getElementById('upico').style.display = 'none'; }
+    function b64f(f) { return new Promise((r, j) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = j; fr.readAsDataURL(f); }); }
+    function calcDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+    function updateCommunityRisk(triggerFarmer) {
+      if (!triggerFarmer.disease || triggerFarmer.confidence < 70) return;
+      let alertsSent = 0;
+      farmers.forEach(f => {
+        if (f.id === triggerFarmer.id) return;
+        const dist = calcDistance(triggerFarmer.lat, triggerFarmer.lon, f.lat, f.lon);
+        let riskScore = 0;
+        if (dist < 5) riskScore += 5; else if (dist < 15) riskScore += 3; else if (dist < 30) riskScore += 1;
+        if (f.crop === triggerFarmer.crop) riskScore += 4;
+        if (cw && cw.humidity > 70) riskScore += 2;
+        let newRisk = 'LOW';
+        if (riskScore >= 8) newRisk = 'HIGH'; else if (riskScore >= 5) newRisk = 'MEDIUM';
+        if (newRisk === 'HIGH' && f.risk !== 'HIGH') {
+          f.risk = 'HIGH'; alertsSent++;
+          if (typeof toast !== 'undefined') toast('[Risk Engine] Early Warning: HIGH RISK for ' + f.name + ' (Distance: ' + dist.toFixed(1) + 'km)', 'wn');
+          sndSMS(f.mobile, f.name, f.crop, 'Neighbourhood ' + triggerFarmer.disease, 'HIGH', triggerFarmer.confidence, f.village, f.district, f.lang);
+        } else if (newRisk === 'MEDIUM' && f.risk === 'LOW') {
+          f.risk = 'MEDIUM'; alertsSent++;
+          if (typeof toast !== 'undefined') toast('[Risk Engine] Early Warning: MEDIUM RISK for ' + f.name, 'wn');
+          sndSMS(f.mobile, f.name, f.crop, 'Neighbourhood ' + triggerFarmer.disease, 'MEDIUM', triggerFarmer.confidence, f.village, f.district, f.lang);
+        }
+      });
+      if (alertsSent > 0) localStorage.setItem('cgf', JSON.stringify(farmers));
+    }
+    async function doDetect(isFollowUp) {
+      const file = document.getElementById('lf').files[0]; if (!file) { toast('Please upload a leaf image first', 'wn'); return; } document.getElementById('dpla').style.display = 'none'; document.getElementById('dres').style.display = 'none'; toast('Analyzing...', ''); let res;
+      if (K.kw && K.be) { try { const fd = new FormData(); fd.append('image', file); const r = await fetch(K.be + '/api/disease/detect', { method: 'POST', body: fd }); res = await r.json(); } catch (e) { res = { ...MD[0], demo: true }; } }
+      else if (K.kw) { try { const img = await b64f(file); const r = await fetch('https://crop.kindwise.com/api/v1/identification', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Api-Key': K.kw }, body: JSON.stringify({ images: [img], similar_images: true }) }); const d = await r.json(); const t = d.result && d.result.disease && d.result.disease.suggestions && d.result.disease.suggestions[0]; res = { disease: t ? t.name : 'Unknown', confidence: t ? Math.round(t.probability * 1000) / 10 : 0, severity: 'MEDIUM', treatment: (t && t.details && t.details.treatment) || 'Consult agricultural officer.', ipm_advice: 'Follow IPM guidelines.', organic: 'Consult local extension officer.', source: 'kindwise' }; } catch (e) { res = { ...MD[0], demo: true }; } }
+      else { res = { ...MD[Math.floor(Math.random() * MD.length)], demo: true }; }
+      ld = res; const lat = document.getElementById('flat').value || gv('wlat') || 26.84; const lon = document.getElementById('flon').value || gv('wlon') || 80.94; const wd = await getWD(lat, lon, res.confidence);
+      if (farmers.length > 0) { let f = farmers[farmers.length - 1]; let oldConf = f.confidence; f.disease = res.disease; f.confidence = res.confidence; if (file) { try { f.img = await b64f(file); } catch (e) { } } if (res.confidence < 80) { f.status = 'pending_expert'; } updateCommunityRisk(f); localStorage.setItem('cgf', JSON.stringify(farmers)); if (isFollowUp && oldConf) { const dday = document.getElementById('followUpDay').value; if (res.confidence < oldConf - 5) { res.followUpMsg = '<div style="background:#f0fdf4;border:1px solid #22c55e;color:#166534;padding:12px;border-radius:10px;margin-top:15px;font-size:.85rem"><b><i class="fa fa-arrow-trend-down"></i> Day ' + dday + ' Follow-up: IMPROVING</b><br>Severity dropped from ' + oldConf + '% to ' + res.confidence + '%. Current management is working.</div>'; } else if (res.confidence > oldConf + 5) { res.followUpMsg = '<div style="background:#fef2f2;border:1px solid #ef4444;color:#991b1b;padding:12px;border-radius:10px;margin-top:15px;font-size:.85rem"><b><i class="fa fa-arrow-trend-up"></i> Day ' + dday + ' Follow-up: WORSENING</b><br>Severity increased from ' + oldConf + '% to ' + res.confidence + '%. High-priority alert triggered. Consult expert immediately.</div>'; sndSMS(f.mobile, f.name, f.crop, f.disease, 'HIGH', res.confidence, f.village, f.district, f.lang); } else { res.followUpMsg = '<div style="background:#eff6ff;border:1px solid #3b82f6;color:#1e3a8a;padding:12px;border-radius:10px;margin-top:15px;font-size:.85rem"><b><i class="fa fa-minus"></i> Day ' + dday + ' Follow-up: STABLE</b><br>Severity is stable (' + oldConf + '% to ' + res.confidence + '%). Monitor closely.</div>'; } } } showDRes(res, wd); updCtx();
+    }
+    function showDRes(r, wd) {
+      const c = r.confidence;
+      const isHi = curLang === 'hi';
+      const col = c > 80 ? '#ef4444' : c > 55 ? '#f59e0b' : '#22c55e';
+      const sev = c > 80 ? { label: isHi ? 'गंभीर' : 'SEVERE', bg: '#fef2f2', border: '#ef4444', tc: '#991b1b' } : c > 55 ? { label: isHi ? 'मध्यम' : 'MODERATE', bg: '#fffbeb', border: '#f59e0b', tc: '#92400e' } : { label: isHi ? 'हल्का' : 'MILD', bg: '#f0fdf4', border: '#22c55e', tc: '#166534' };
+      let exMsg = '';
+      if (c < 80) { exMsg = `<div style="background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:12px;border-radius:10px;font-size:.82rem;margin-top:12px"><i class="fa fa-triangle-exclamation"></i> <b>${isHi ? 'विशेषज्ञ सत्यापन आवश्यक' : 'Needs Expert Verification'}</b><br>${isHi ? 'AI आत्मविश्वास कम है। केस जिला विशेषज्ञ समीक्षा के लिए भेजा गया।' : 'AI confidence is low. Case flagged for expert review.'}</div>`; }
+      const f = farmers[farmers.length - 1] || {};
+      const wdRisk = wd && wd.risk ? wd.risk.level : r.severity;
+      document.getElementById('dcon').innerHTML = `
+    <!-- DISEASE HEADER -->
+    <div style="background:${sev.bg};border:2px solid ${sev.border};border-radius:14px;padding:18px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px">
+      <div style="width:52px;height:52px;border-radius:12px;background:${sev.border};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="fa fa-virus" style="color:#fff;font-size:1.3rem"></i>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:${sev.tc};font-weight:700;margin-bottom:4px">${r.demo ? '[DEMO] ' : ''} ${isHi ? 'रोग पहचाना गया' : 'DISEASE IDENTIFIED'}</div>
+        <div style="font-size:1.2rem;font-weight:800;color:var(--tx);margin-bottom:6px">${r.disease}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:${sev.border};color:#fff;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:700">${sev.label}</span>
+          <span style="background:var(--bg);border:1px solid var(--bd);color:var(--tx2);padding:3px 10px;border-radius:99px;font-size:.7rem">${isHi ? 'AI आत्मविश्वास' : 'AI Confidence'}: ${c}%</span>
+          ${f.crop ? `<span style="background:var(--pbg);border:1px solid var(--p);color:var(--p);padding:3px 10px;border-radius:99px;font-size:.7rem">${f.crop} — ${f.stage || 'N/A'}</span>` : ''}
+        </div>
+      </div>
+    </div>
+    <!-- CONFIDENCE METER -->
+    <div style="background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:.73rem;color:var(--tx2);margin-bottom:6px">
+        <span><b>${isHi ? 'AI आत्मविश्वास' : 'AI Confidence Meter'}</b></span>
+        <span style="color:${col};font-weight:700">${c}%</span>
+      </div>
+      <div style="height:10px;background:var(--bd);border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${c}%;background:${col};border-radius:99px;transition:width .6s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--tx3);margin-top:4px">
+        <span>${isHi ? 'निम्न' : 'Low (<55%)'}</span><span>${isHi ? 'मध्यम' : 'Medium (55-80%)'}</span><span>${isHi ? 'उच्च' : 'High (>80%)'}</span>
+      </div>
+    </div>
+    <!-- WEATHER + RISK GRID -->
+    <div class="wpgrid" style="margin-bottom:14px">
+      <div class="wpc">
+        <div class="wpc-v" style="color:${wdRisk === 'HIGH' ? '#ef4444' : wdRisk === 'MEDIUM' ? '#f59e0b' : '#22c55e'}">${wdRisk || '--'}</div>
+        <div class="wpc-l">${isHi ? 'मौसम जोखिम' : 'Weather Risk'}</div>
+      </div>
+      <div class="wpc">
+        <div class="wpc-v" style="font-size:1rem">${wd ? wd.temperature + '°C' : '--'}</div>
+        <div class="wpc-l">${isHi ? 'तापमान' : 'Temp'}</div>
+      </div>
+      <div class="wpc">
+        <div class="wpc-v" style="font-size:1rem">${wd ? wd.humidity + '%' : '--'}</div>
+        <div class="wpc-l">${isHi ? 'नमी' : 'Humidity'}</div>
+      </div>
+    </div>
+    <!-- TREATMENT STEPS -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:8px;padding:12px 14px">
+        <div style="font-size:.7rem;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px"><i class="fa fa-syringe"></i> ${isHi ? 'तत्काल उपचार' : 'Immediate Treatment'}</div>
+        <div style="font-size:.82rem;color:#1e293b;line-height:1.6">${r.treatment}</div>
+      </div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:12px 14px">
+        <div style="font-size:.7rem;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px"><i class="fa fa-shield"></i> ${isHi ? 'IPM / रोकथाम' : 'IPM / Prevention'}</div>
+        <div style="font-size:.82rem;color:#1e293b;line-height:1.6">${r.ipm_advice}</div>
+      </div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:8px;padding:12px 14px">
+        <div style="font-size:.7rem;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px"><i class="fa fa-seedling"></i> ${isHi ? 'जैविक / सुरक्षित विकल्प' : 'Organic / Safe Input'}</div>
+        <div style="font-size:.82rem;color:#1e293b;line-height:1.6">${r.organic}</div>
+      </div>
+    </div>
+    ${r.followUpMsg || ''}
+    ${exMsg}
+    
+    ${r.neighbourhood_alerts && r.neighbourhood_alerts.length > 0 ? `
+    <!-- COMMUNITY RISK ENGINE -->
+    <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:14px;margin-top:14px">
+      <div style="font-size:.8rem;font-weight:700;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="fa fa-tower-broadcast" style="color:#2563eb"></i> Community Risk Engine Activated
+      </div>
+      <div style="font-size:.7rem;color:#64748b;margin-bottom:10px">Alerts dispatched to nearby farmers based on risk factors (Distance, Crop, Stage, Weather).</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${r.neighbourhood_alerts.map(a => {
+          const abg = a.risk_level === 'HIGH' ? '#fef2f2' : a.risk_level === 'MEDIUM' ? '#fffbeb' : '#f0fdf4';
+          const abc = a.risk_level === 'HIGH' ? '#ef4444' : a.risk_level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
+          const atc = a.risk_level === 'HIGH' ? '#991b1b' : a.risk_level === 'MEDIUM' ? '#92400e' : '#166534';
+          return `<div style="background:${abg};border-left:3px solid ${abc};padding:10px;border-radius:6px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-weight:700;color:${atc};font-size:.75rem">${a.farmer} - ${a.risk_level} RISK</span>
+              <span style="font-size:.65rem;color:#64748b">${a.crop} | ${a.weather}</span>
+            </div>
+            <div style="font-size:.7rem;color:#334155">${a.message}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <button class="btn btp btf" style="margin-top:12px;width:100%" onclick="sp('cht',null)"><i class="fa fa-robot"></i> ${isHi ? 'AI से विस्तार में सलाह लें' : 'Ask AI for Detailed Advice'}</button>
+  `;
+      document.getElementById('dres').style.display = 'block';
+      document.getElementById('dpla').style.display = 'none';
+      toast(t('analysisOk'), 'ok');
+      if (wd) {
+        document.getElementById('wad').style.display = 'block';
+        document.getElementById('wadc').innerHTML = wHTML(wd);
+      }
+    }
+    function getFarmingAdvisory(temp, rainChance, windspeed) {
+      if (rainChance > 50) return { title: 'Rain Expected', advice: 'Do not spray pesticides or fertilizers today. Wait for clear weather. (Barish ki sambhavna hai, spray na karein).', risk: 'HIGH' };
+      if (temp > 35) return { title: 'Heat Stress', advice: 'High temperature. Irrigate fields in the early morning or late evening. (Adhik garmi, khet ki sinchai subah ya sham ko karein).', risk: 'MEDIUM' };
+      if (windspeed > 25) return { title: 'High Wind', advice: 'Avoid spraying chemicals. Secure tall crops. (Tez hawa, spray na karein).', risk: 'MEDIUM' };
+      if (temp < 15) return { title: 'Cold Stress', advice: 'Protect sensitive crops from cold. Provide light irrigation. (Sardi se fasal bachayen).', risk: 'LOW' };
+      return { title: 'Favorable Conditions', advice: 'Weather is favorable for normal agricultural activities. (Mausam kheti ke anukool hai).', risk: 'LOW' };
+    }
+    async function getWD(lat, lon, conf) {
+      const f = farmers[farmers.length - 1] || {}; const st = f.stage || ''; const sl = f.soil || ''; if (K.be) { try { const r = await fetch(K.be + '/api/weather?lat=' + lat + '&lon=' + lon + '&confidence=' + (conf || 0) + '&stage=' + encodeURIComponent(st) + '&soil=' + encodeURIComponent(sl)); return await r.json(); } catch (_) { } }
+      try { const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current_weather=true&hourly=relative_humidity_2m&daily=precipitation_probability_max&timezone=auto&forecast_days=1'; const r = await fetch(u); const d = await r.json(); const w = d.current_weather; const h = new Date().getUTCHours(); const hum = d.hourly && d.hourly.relative_humidity_2m ? d.hourly.relative_humidity_2m[h] : 65; const rc = d.daily && d.daily.precipitation_probability_max ? d.daily.precipitation_probability_max[0] : 0; return { temperature: w.temperature, humidity: hum, windspeed: w.windspeed, weathercode: w.weathercode, source: 'open-meteo', risk: rsk(w.temperature, hum, conf || 0, st, sl), advisory: getFarmingAdvisory(w.temperature, rc, w.windspeed) }; } catch (e) { const t = Math.round((28 + Math.random() * 12) * 10) / 10; const h = Math.round((55 + Math.random() * 35) * 10) / 10; const rc = Math.round(Math.random() * 80); return { temperature: t, humidity: h, windspeed: 12, weathercode: 0, source: 'demo', risk: rsk(t, h, conf || 0, st, sl), advisory: getFarmingAdvisory(t, rc, 12) }; }
+    }
+    async function getFC(lat, lon) {
+      if (K.be) { try { const r = await fetch(K.be + '/api/weather/forecast?lat=' + lat + '&lon=' + lon); return (await r.json()).forecast; } catch (_) { } }
+      try { const u = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max,weathercode&timezone=auto&forecast_days=7'; const r = await fetch(u); const d = await r.json(); return d.daily.time.map((date, i) => ({ date, tempMax: d.daily.temperature_2m_max[i], tempMin: d.daily.temperature_2m_min[i], rain: d.daily.precipitation_sum[i], rainChance: d.daily.precipitation_probability_max[i], wind: d.daily.windspeed_10m_max[i], weathercode: d.daily.weathercode[i] })); } catch (e) { return Array.from({ length: 7 }, (_, i) => ({ date: new Date(Date.now() + i * 86400000).toISOString().slice(0, 10), tempMax: Math.round(28 + Math.random() * 10), tempMin: Math.round(20 + Math.random() * 6), rain: parseFloat((Math.random() * 15).toFixed(1)), rainChance: Math.round(Math.random() * 80), wind: Math.round(8 + Math.random() * 22), weathercode: [0, 1, 2, 3, 61, 80][Math.floor(Math.random() * 6)] })); }
+    }
+    function rsk(t, h, c, st, sl) { let s = 0; if (h > 80) s += 3; else if (h > 60) s += 2; else s += 1; if (t > 35) s += 3; else if (t > 30) s += 2; else s += 1; if (c > 70) s += 3; else if (c > 40) s += 2; if (st === 'Flowering' || st === 'Fruiting') s += 1; if (sl === 'Clay' && h > 75) s += 1; const lv = s >= 8 ? 'HIGH' : s >= 5 ? 'MEDIUM' : 'LOW'; const stm = st ? ' (Stage: ' + st + ')' : ''; const adv = { HIGH: 'Turant karwai! Apply fungicide NOW' + stm + '. KCC: 1800-180-1551', MEDIUM: 'Monitor closely. Consider preventive spray' + stm + '.', LOW: 'Conditions safe. Maintain regular monitoring.' }; return { level: lv, score: s, maxScore: 11, advice: adv[lv] }; }
+    const WM = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Foggy', 61: 'Light rain', 63: 'Moderate rain', 80: 'Rain showers', 95: 'Thunderstorm' };
+    const WI = { 0: '&#9728;', 1: '&#127780;', 2: '&#9925;', 3: '&#9729;', 45: '&#127787;', 61: '&#127783;', 63: '&#127783;', 80: '&#127783;', 95: '&#9928;' };
+    function wHTML(w) {
+      const risk = w.risk || rsk(w.temperature, w.humidity, 0, '', '');
+      const isHi = curLang === 'hi';
+      const rCol = { HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#22c55e' }[risk.level] || '#22c55e';
+      const rBg = { HIGH: '#fef2f2', MEDIUM: '#fffbeb', LOW: '#f0fdf4' }[risk.level] || '#f0fdf4';
+      const WIcon = { 0: '<i class="fa fa-sun"></i>', 1: '<i class="fa fa-cloud-sun"></i>', 2: '<i class="fa fa-cloud-sun"></i>', 3: '<i class="fa fa-cloud"></i>', 45: '<i class="fa fa-smog"></i>', 61: '<i class="fa fa-cloud-rain"></i>', 63: '<i class="fa fa-cloud-showers-heavy"></i>', 80: '<i class="fa fa-cloud-showers-water"></i>', 95: '<i class="fa fa-cloud-bolt"></i>' };
+      const icon = WIcon[w.weathercode] || '<i class="fa fa-thermometer-half"></i>';
+      const advHtml = w.advisory ? `<div style="background:#f8fafc;border:1px solid var(--bd);border-left:4px solid var(--p);border-radius:10px;padding:12px;margin-bottom:12px;display:flex;gap:12px">
+      <div style="color:var(--p);font-size:1.5rem"><i class="fa fa-leaf"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:.9rem;color:var(--tx)">${isHi ? 'कृषि सलाह' : 'Farming Advisory'}: ${w.advisory.title}</div>
+        <div style="font-size:.8rem;color:var(--tx2);margin-top:2px">${w.advisory.advice}</div>
+      </div>
+    </div>` : '';
+      // Parameter risk rows
+      const params = [
+        { label: isHi ? 'तापमान' : 'Temperature', val: w.temperature + '°C', risk: w.temperature > 35 || w.temperature < 10 ? 'HIGH' : w.temperature > 30 ? 'MEDIUM' : 'LOW', why: isHi ? (w.temperature > 35 ? 'अत्यधिक गर्मी — फसल तनाव में' : w.temperature < 10 ? 'अत्यधिक ठंड — वृद्धि रुकती है' : 'सामान्य तापमान') : (w.temperature > 35 ? 'Too hot — crop stress & fungal risk' : w.temperature < 10 ? 'Too cold — growth slows down' : 'Normal range') },
+        { label: isHi ? 'नमी' : 'Humidity', val: w.humidity + '%', risk: w.humidity > 80 ? 'HIGH' : w.humidity > 60 ? 'MEDIUM' : 'LOW', why: isHi ? (w.humidity > 80 ? 'अत्यधिक नमी — कवक रोग खतरा' : w.humidity > 60 ? 'मध्यम नमी — निगरानी रखें' : 'सामान्य नमी') : (w.humidity > 80 ? 'Very high — fungal & bacterial disease likely' : w.humidity > 60 ? 'Medium humidity — monitor closely' : 'Low humidity — safe') },
+        { label: isHi ? 'हवा गति' : 'Wind Speed', val: w.windspeed + ' km/h', risk: w.windspeed > 40 ? 'HIGH' : w.windspeed > 20 ? 'MEDIUM' : 'LOW', why: isHi ? (w.windspeed > 40 ? 'तेज हवा — फसल को नुकसान' : w.windspeed > 20 ? 'तेज हवा — कीटाणु फैलते हैं' : 'सामान्य हवा') : (w.windspeed > 40 ? 'Strong wind — crop lodging risk' : w.windspeed > 20 ? 'Moderate wind — spore dispersal' : 'Normal') },
+        { label: isHi ? 'ओस बिंदु' : 'Dew Point', val: (w.temperature - ((100 - w.humidity) / 5)).toFixed(1) + '°C', risk: w.humidity > 75 ? 'HIGH' : w.humidity > 55 ? 'MEDIUM' : 'LOW', why: isHi ? 'ओस बिंदु और नमी से कवक रोग बढ़ता है' : 'Dew point affects leaf wetness & fungal growth' },
+        { label: isHi ? 'अनुभव तापमान' : 'Feels Like', val: (w.temperature + 2).toFixed(0) + '°C', risk: 'LOW', why: isHi ? 'वास्तविक अनुभव' : 'Heat index considering humidity' },
+        { label: isHi ? 'वर्षा संभावना' : 'Rain Prob.', val: w.weathercode >= 61 ? 'HIGH' : 'LOW', risk: w.weathercode >= 61 ? 'MEDIUM' : 'LOW', why: isHi ? (w.weathercode >= 61 ? 'बारिश हो सकती है — स्प्रे न करें' : 'बारिश नहीं — स्प्रे कर सकते हैं') : (w.weathercode >= 61 ? 'Rain expected — delay spraying' : 'No rain — good for spray') },
+      ];
+      const paramRows = params.map(p => `<tr><td style="padding:7px 10px;font-weight:500">${p.label}</td><td style="padding:7px 10px;font-weight:700">${p.val}</td><td style="padding:7px 10px"><span style="display:inline-block;padding:2px 8px;border-radius:99px;font-size:.65rem;font-weight:700;background:${p.risk === 'HIGH' ? '#fee2e2' : p.risk === 'MEDIUM' ? '#fef3c7' : '#dcfce7'};color:${p.risk === 'HIGH' ? '#991b1b' : p.risk === 'MEDIUM' ? '#92400e' : '#166534'}">${p.risk}</span></td><td style="padding:7px 10px;font-size:.72rem;color:var(--tx2)">${p.why}</td></tr>`).join('');
+      return `<div style="margin:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:2.4rem;color:var(--p)">${icon}</div>
+        <div>
+          <div style="font-size:2rem;font-weight:800;color:var(--tx)">${w.temperature}°C</div>
+          <div style="font-size:.8rem;color:var(--tx2)">${WM[w.weathercode] || 'Current conditions'} &bull; <span style="font-size:.65rem;color:var(--tx3)">${w.source === 'demo' ? 'Demo' : 'Open-Meteo LIVE'}</span></div>
+        </div>
+      </div>
+      <div style="background:${rBg};border:2px solid ${rCol};border-radius:12px;padding:10px 18px;text-align:center">
+        <div style="font-size:1.1rem;font-weight:800;color:${rCol}">${isHi ? { HIGH: 'उच्च', MEDIUM: 'मध्यम', LOW: 'न्यून' }[risk.level] || risk.level : risk.level} ${isHi ? 'जोखिम' : 'RISK'}</div>
+        <div style="font-size:.65rem;color:${rCol};opacity:.8">${risk.score}/${risk.maxScore} ${isHi ? 'अंक' : 'pts'}</div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:10px 4px;margin-bottom:12px">
+      <div style="font-size:.68rem;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;padding:0 10px 6px" data-hi="पैरामीटर-वार जोखिम विश्लेषण" data-en="Parameter-wise Risk Breakdown">Parameter-wise Risk Breakdown</div>
+      <table class="risk-table" style="width:100%">
+        <thead><tr><th>${isHi ? 'पैरामीटर' : 'Parameter'}</th><th>${isHi ? 'मान' : 'Value'}</th><th>${isHi ? 'स्तर' : 'Level'}</th><th>${isHi ? 'फसल प्रभाव' : 'Crop Impact'}</th></tr></thead>
+        <tbody>${paramRows}</tbody>
+      </table>
+    </div>
+    <div style="background:${rBg};border-left:4px solid ${rCol};border-radius:8px;padding:12px 14px;font-size:.82rem;color:var(--tx)">
+      <b><i class="fa fa-lightbulb"></i> ${isHi ? 'सलाह' : 'Advisory'}:</b> ${risk.advice}
+    </div>
+  </div>`;
+    }
+    async function fetchW() {
+      const lat = document.getElementById('wlat').value;
+      const lon = document.getElementById('wlon').value;
+      const conf = gv('wconf') || '0';
+      if (!lat || !lon) { toast('Pehle city search karein ya GPS use karein &#128205;', 'wn'); return; }
+      document.getElementById('wres').innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:28px"><i class="fa fa-spinner fa-spin" style="font-size:1.4rem;color:var(--p)"></i><p style="margin-top:8px;color:var(--tx2);font-size:.82rem">Fetching live weather from Open-Meteo...</p></div></div>';
+      const w = await getWD(lat, lon, parseFloat(conf)); cw = w;
+      document.getElementById('wres').innerHTML = '<div class="card" style="margin-bottom:14px">' + wHTML(w) + '</div>';
+      const fc = await getFC(lat, lon);
+      document.getElementById('fgrid').innerHTML = fc.map(d => '<div class="fd"><div class="fdd">' + d.date.slice(5) + '</div><div class="fdi">' + (d.rain > 5 ? '&#127783;' : d.tempMax > 35 ? '&#9728;' : '&#9925;') + '</div><div class="fdt">' + d.tempMax + '&deg;/' + d.tempMin + '&deg;</div><div class="fdr">&#128167;' + d.rain + 'mm</div></div>').join('');
+      document.getElementById('fcard').style.display = 'block';
+      updCtx(); toast('Weather updated! &#127783;', 'ok');
+    }
+    function rndOfc() {
+      const all = ar();
+      document.getElementById('stats').innerHTML = `<div class="sc"><div class="t">${curLang === 'hi' ? 'सभी किसान' : 'Total Farmers'}</div><div class="v">${all.length}</div></div><div class="sc"><div class="t">${curLang === 'hi' ? 'उच्च अलर्ट' : 'High Alerts'}</div><div class="v" style="color:#ef4444">${all.filter(r => r.risk === 'HIGH').length}</div></div><div class="sc"><div class="t">${curLang === 'hi' ? 'समीक्षा लंबित' : 'Pending Review'}</div><div class="v" style="color:#f59e0b">${all.filter(r => r.status === 'pending_expert').length}</div></div><div class="sc"><div class="t">${curLang === 'hi' ? 'सत्यापित' : 'Validated'}</div><div class="v" style="color:#22c55e">${all.filter(r => r.status === 'validated').length}</div></div>`;
+      // Render full farmer table
+      renderFarmerTable(all);
+      const p = all.filter(r => r.status === 'pending_expert');
+      document.getElementById('penlist').innerHTML = p.length === 0 ? `<p style="color:var(--tx2);font-size:.8rem;padding:15px;text-align:center">${curLang === 'hi' ? 'कोई लंबित समीक्षा नहीं' : 'No pending reviews'}</p>` : p.map(r => `<div class="pr"><div style="flex:1"><div style="font-weight:700">${r.name} &mdash; ${r.crop} (${r.stage || '--'})</div><div style="font-size:.73rem;color:var(--tx2)">AI: ${r.disease} (${r.confidence}%)</div></div><button class="btn" style="background:#e0e7ff;color:#4f46e5;padding:6px 12px;font-size:0.75rem" onclick="reviewCase(${r.id})"><i class="fa fa-user-doctor"></i> Review</button></div>`).join('');
+      const av = all.filter(r => r.status === 'validated' && !r.fieldConfirmed);
+      document.getElementById('vallist').innerHTML = av.length === 0 ? `<p style="color:var(--tx2);font-size:.8rem;padding:15px;text-align:center">${curLang === 'hi' ? 'सभी मामलों की पुष्टि हो गई' : 'All cases confirmed'}</p>` : av.map(r => `<div class="pr"><div style="flex:1"><div style="font-weight:700">${r.name} &mdash; ${r.disease}</div><div style="font-size:.73rem;color:var(--tx2)">${curLang === 'hi' ? 'फील्ड पुष्टि के लिए तैयार' : 'Ready for field feedback'}</div></div><button class="btn" style="background:#dcfce7;color:#166534;padding:6px 12px;font-size:0.75rem" onclick="confirmField(${r.id})"><i class="fa fa-check"></i> ${curLang === 'hi' ? 'पुष्टि' : 'Confirm'}</button></div>`).join('');
+      rndAlerts();
+    }
+    function renderFarmerTable(data) {
+      const tbody = document.getElementById('farmerTbody');
+      if (!tbody) return;
+      if (!data || !data.length) { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:20px;color:var(--tx2)">${curLang === 'hi' ? 'कोई किसान अभी तक पंजीकृत नहीं' : 'No farmers registered yet'}</td></tr>`; return; }
+      tbody.innerHTML = data.map((r, i) => {
+        const rc = { HIGH: '#ef4444', MEDIUM: '#f59e0b', LOW: '#22c55e' }[r.risk] || '#94a3b8';
+        const sc = { validated: '<span style="background:#dcfce7;color:#166534;padding:2px 7px;border-radius:99px;font-size:.65rem;font-weight:700">Validated</span>', pending_expert: '<span style="background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:99px;font-size:.65rem;font-weight:700">Review</span>', pending: '<span style="background:#fef3c7;color:#92400e;padding:2px 7px;border-radius:99px;font-size:.65rem;font-weight:700">Pending</span>' }[r.status] || '<span style="background:var(--bg);color:var(--tx2);padding:2px 7px;border-radius:99px;font-size:.65rem">--</span>';
+        return `<tr style="border-bottom:1px solid var(--bd);transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">  
+      <td style="padding:9px 12px;color:var(--tx2)">${i + 1}</td>
+      <td style="padding:9px 12px;font-weight:600">${r.name}</td>
+      <td style="padding:9px 12px;color:var(--tx2);font-size:.76rem">${r.mobile || '--'}</td>
+      <td style="padding:9px 12px">${r.village || '--'}</td>
+      <td style="padding:9px 12px">${r.district || '--'}</td>
+      <td style="padding:9px 12px;font-weight:500">${r.crop || '--'}</td>
+      <td style="padding:9px 12px;font-size:.76rem;color:var(--tx2)">${r.stage || '--'}</td>
+      <td style="padding:9px 12px;font-size:.78rem">${r.disease || '--'}</td>
+      <td style="padding:9px 12px;font-weight:700;color:${r.confidence > 80 ? '#ef4444' : r.confidence > 50 ? '#f59e0b' : '#22c55e'}">${r.confidence ? r.confidence + '%' : '--'}</td>
+      <td style="padding:9px 12px"><span style="color:${rc};font-weight:700;font-size:.78rem">${r.risk || '--'}</span></td>
+      <td style="padding:9px 12px">${sc}</td>
+      <td style="padding:9px 12px"><button class="btn bts" style="font-size:.7rem;padding:4px 9px" onclick="reviewCase(${r.id})"><i class="fa fa-eye"></i></button></td>
+    </tr>`;
+      }).join('');
+    }
+    function filterFarmers() {
+      const q = document.getElementById('fSearch')?.value.toLowerCase() || '';
+      const filtered = ar().filter(r => !q || (r.name && r.name.toLowerCase().includes(q)) || (r.village && r.village.toLowerCase().includes(q)) || (r.crop && r.crop.toLowerCase().includes(q)) || (r.district && r.district.toLowerCase().includes(q)));
+      renderFarmerTable(filtered);
+    }
+    function exportCSV() {
+      const data = ar();
+      const head = ['Name', 'Mobile', 'Village', 'District', 'Crop', 'Stage', 'Disease', 'Confidence%', 'Risk', 'Status'];
+      const rows = data.map(r => [r.name, r.mobile, r.village, r.district, r.crop, r.stage, r.disease, r.confidence, r.risk, r.status].map(v => `"${v || ''}"`).join(','));
+      const csv = 'data:text/csv;charset=utf-8,' + head.join(',') + '\n' + rows.join('\n');
+      const a = document.createElement('a'); a.href = encodeURI(csv); a.download = 'CropGuard_Farmers.csv'; a.click();
+    }
+    function confirmField(id) { const r = farmers.find(f => f.id === id); if (r) { r.fieldConfirmed = true; localStorage.setItem('cgf', JSON.stringify(farmers)); } rndOfc(); toast('Field confirmation saved to learning loop!', 'ok'); }
+    function reviewCase(id) { const r = ar().find(f => f.id === id); if (!r) return; document.getElementById('reviewc').innerHTML = '<img src="' + (r.img || 'https://via.placeholder.com/300x200?text=No+Image') + '" style="width:100%;max-height:250px;object-fit:cover;border-radius:12px;margin-bottom:14px;background:#0f172a" alt="Leaf"><div style="font-weight:800;font-size:1.1rem;margin-bottom:4px;color:var(--tx)">AI Prediction: ' + r.disease + ' <span style="font-size:0.8rem;color:#ef4444;font-weight:600">(' + r.confidence + '%)</span></div><p style="font-size:0.8rem;color:var(--tx2);margin-bottom:15px">Crop: ' + r.crop + (r.stage ? ' (' + r.stage + ')' : '') + ' | Soil: ' + (r.soil || 'Unknown') + '</p><div class="fgp" style="margin-bottom:18px"><label>Correct Diagnosis (if wrong)</label><input class="fc" id="revDis" value="' + r.disease + '"></div><div style="display:flex;gap:10px"><button class="btn btp" style="flex:1" onclick="submitReview(' + id + ')"><i class="fa fa-check-double"></i> Validate & Approve</button></div>'; document.getElementById('reviewm').classList.add('op'); }
+    function submitReview(id) { const r = farmers.find(f => f.id === id); if (r) { r.disease = document.getElementById('revDis').value; r.status = 'validated'; r.confidence = 100; localStorage.setItem('cgf', JSON.stringify(farmers)); } cm2('reviewm'); rndOfc(); toast('Report validated by expert!', 'ok'); }
+    function doSMS(id) { const r = ar().find(x => x.id === id); if (!r) return; sndSMS(r.mobile, r.name, r.crop, r.disease, r.risk, r.confidence, r.village, r.district, r.lang); }
+    async function sndSMS(mob, name, crop, dis, risk, conf, vil, dist, lang) { if (!K.ts || !K.tt) { toast('SMS demo: Add Twilio keys to .env to send real SMS', 'wn'); return; } if (!K.be) { toast('SMS needs backend. Run server.js and set Backend URL.', 'wn'); return; } try { const r = await fetch(K.be + '/api/sms/send-alert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ toNumber: mob, farmerName: name, crop, disease: dis, risk, confidence: conf, village: vil, district: dist, lang }) }); const d = await r.json(); let chMsg = d.channels ? d.channels.map(c => `${c.channel}: ${c.status}`).join(' | ') : ''; toast(d.demo ? 'Demo Alerts: ' + chMsg : 'Alerts sent: ' + chMsg, 'ok'); } catch (err) { toast('SMS error: ' + err.message, 'er'); } }
+    function tbulk() { const p = document.getElementById('bcomp'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
+    async function sendBulk() { const msg = document.getElementById('bmsg').value.trim(); if (!K.ts || !K.tt) { toast('Bulk SMS: Add Twilio keys to .env to send. (SMS is optional)', 'wn'); return; } if (!K.be) { toast('Bulk SMS needs backend URL set in API Keys.', 'wn'); return; } try { const r = await fetch(K.be + '/api/sms/bulk-alert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ farmers: ar().map(f => ({ mobile: f.mobile })), alertMsg: msg }) }); const d = await r.json(); toast('Bulk SMS: ' + d.sent + ' sent, ' + d.failed + ' failed', 'ok'); } catch (err) { toast('Error: ' + err.message, 'er'); } }
+    function rndAlerts() { const al = ar().filter(r => r.risk !== 'LOW').slice(0, 4); document.getElementById('ralerts').innerHTML = al.length === 0 ? '<p style="color:var(--tx2);font-size:.8rem;text-align:center;padding:18px">No active alerts</p>' : al.map(r => '<div class="ai"><div class="adot" style="background:' + RC[r.risk] + '"></div><div class="ain"><div class="n">' + r.name + ' &mdash; ' + r.crop + '</div><div class="d">' + r.disease + ' &bull; ' + r.village + '</div></div><span class="rt r' + r.risk[0] + '">' + r.risk + '</span></div>').join(''); }
+    const ETL = { 'Pink Bollworm': { thresh: 8, crop: 'Cotton', spray: 'Chlorpyrifos 20EC 2mL/L', life: 'Egg→Larva→Pupa→Adult (30-40 days)', hi: 'गुलाबी सुंडी', en: 'Pink Bollworm' }, 'Whitefly': { thresh: 10, crop: 'Cotton, Tomato, Chilli', spray: 'Imidacloprid 17.8SL 0.5mL/L', life: 'Egg→Nymph→Adult (20-28 days)', hi: 'सफेद मक्खी', en: 'Whitefly' }, 'Fall Armyworm': { thresh: 5, crop: 'Maize, Sorghum', spray: 'Emamectin Benzoate 5SG 0.4g/L', life: 'Egg→Larva(6 instars)→Pupa→Adult (30 days)', hi: 'फॉल आर्मीवर्म', en: 'Fall Armyworm' }, 'Fruit Borer': { thresh: 6, crop: 'Tomato, Brinjal', spray: 'Spinosad 45SC 0.75mL/L', life: 'Egg→Larva→Pupa→Adult (28-35 days)', hi: 'फल छेदक', en: 'Fruit Borer' }, 'Aphid': { thresh: 30, crop: 'Wheat, Mustard, Vegetables', spray: 'Dimethoate 30EC 1.5mL/L or Neem oil 5mL/L', life: 'Parthenogenesis (7-10 days per gen)', hi: 'माहू', en: 'Aphid' }, 'Mealybug': { thresh: 10, crop: 'Cotton, Vegetables, Fruits', spray: 'Profenofos 50EC 2mL/L', life: 'Egg→Nymph→Adult (45-50 days)', hi: 'मिलीबग', en: 'Mealybug' }, 'Thrips': { thresh: 20, crop: 'Onion, Cotton, Chilli', spray: 'Fipronil 5SC 1.5mL/L', life: 'Egg→Larva→Pupa→Adult (20-30 days)', hi: 'थ्रिप्स', en: 'Thrips' }, 'Stem Borer': { thresh: 5, crop: 'Rice, Maize, Sugarcane', spray: 'Chlorantraniliprole 18.5SC 0.4mL/L', life: 'Egg→Larva→Pupa→Adult (40-60 days)', hi: 'तना छेदक', en: 'Stem Borer' } };
+    const trapHistory = JSON.parse(localStorage.getItem('cgTrap') || '[]');
+    function showPestInfo() {
+      const pest = document.getElementById('trppest').value;
+      const info = ETL[pest];
+      if (!info) return;
+      document.getElementById('pestInfoTitle').textContent = (curLang === 'hi' ? info.hi : info.en) + ' — ' + pest;
+      document.getElementById('pestInfoDesc').innerHTML = `<b>${curLang === 'hi' ? 'प्रभावित फसल' : 'Affected Crop'}:</b> ${info.crop}<br><b>${curLang === 'hi' ? 'जीवन चक्र' : 'Life Cycle'}:</b> ${info.life}<br><b>${curLang === 'hi' ? 'ETL सीमा' : 'ETL Threshold'}:</b> ${info.thresh} insects/trap/week<br><b>${curLang === 'hi' ? 'अनुशंसित स्प्रे' : 'Recommended Spray'}:</b> ${info.spray}`;
+    }
+    function recordTrap(e) {
+      e.preventDefault();
+      const pest = document.getElementById('trppest').value;
+      const count = parseInt(document.getElementById('trpcount').value);
+      const trapId = document.getElementById('trpid').value;
+      const date = document.getElementById('trpdate').value;
+      const info = ETL[pest];
+      const thresh = info ? info.thresh : 10;
+      const pct = Math.min(100, Math.round((count / thresh) * 100));
+      const isAlert = count >= thresh;
+      const fillColor = pct >= 100 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
+      // ETL Gauge
+      document.getElementById('etlGauge').innerHTML = `
+    <div style="margin-bottom:10px">
+      <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">${pest}</div>
+      <div style="font-size:.75rem;color:var(--tx2);margin-bottom:8px">${curLang === 'hi' ? 'जाल ID' : 'Trap ID'}: ${trapId} &bull; ${date}</div>
+    </div>
+    <div class="etl-bar-wrap">
+      <div class="etl-bar-label"><span>${curLang === 'hi' ? 'कीट संख्या' : 'Count'}: <b>${count}</b></span><span>ETL: <b>${thresh}</b></span></div>
+      <div class="etl-bar"><div class="etl-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+      <div style="font-size:.7rem;color:var(--tx2);margin-top:4px;text-align:right">${pct}% of threshold</div>
+    </div>
+    <div style="background:${isAlert ? '#fef2f2' : '#f0fdf4'};border:1px solid ${isAlert ? '#ef4444' : '#22c55e'};color:${isAlert ? '#991b1b' : '#166534'};padding:12px;border-radius:10px;margin-top:10px">
+      <b><i class="fa fa-${isAlert ? 'triangle-exclamation' : 'check'}"></i> ${isAlert ? (curLang === 'hi' ? 'ETL पार! तुरंत स्प्रे करें' : 'ETL CROSSED! Apply spray immediately') : (curLang === 'hi' ? 'सुरक्षित स्तर' : 'SAFE — Continue monitoring')}</b><br>
+      <span style="font-size:.78rem">${curLang === 'hi' ? 'अनुशंसित' : 'Recommended'}: ${info ? info.spray : 'Consult agronomist'}</span>
+    </div>`;
+      // Result
+      const r = document.getElementById('trapRes');
+      r.innerHTML = `<div style="background:${isAlert ? '#fef2f2' : '#f0fdf4'};border:1px solid ${isAlert ? '#ef4444' : '#22c55e'};color:${isAlert ? '#991b1b' : '#166534'};padding:12px;border-radius:8px"><b><i class="fa fa-${isAlert ? 'triangle-exclamation' : 'check'}"></i> ${isAlert ? (curLang === 'hi' ? 'चेतावनी' : 'ALERT') + ': ETL CROSSED!' : (curLang === 'hi' ? 'सुरक्षित' : 'SAFE')}</b><br>${curLang === 'hi' ? 'गिनती' : 'Count'} (${count}) ${isAlert ? '>= ' : '< '}ETL (${thresh}) ${curLang === 'hi' ? 'के लिए' : 'for'} ${pest}.</div>`;
+      r.style.display = 'block';
+      // Save to history
+      trapHistory.unshift({ trapId, pest, count, thresh, date, status: isAlert ? 'ALERT' : 'SAFE' });
+      localStorage.setItem('cgTrap', JSON.stringify(trapHistory.slice(0, 20)));
+      renderTrapLog();
+      toast(isAlert ? t('pestAlert') : t('pestSafe'), isAlert ? 'er' : 'ok');
+    }
+    function renderTrapLog() {
+      const logEl = document.getElementById('trapLog');
+      if (!trapHistory.length) { logEl.innerHTML = '<p style="color:var(--tx2);font-size:.8rem">No readings recorded yet.</p>'; return; }
+      logEl.innerHTML = trapHistory.slice(0, 8).map(h => `<div class="trap-log-item"><div style="width:8px;height:8px;border-radius:50%;background:${h.status === 'ALERT' ? '#ef4444' : '#22c55e'};flex-shrink:0"></div><div style="flex:1"><div style="font-weight:600">${h.pest}</div><div style="font-size:.68rem;color:var(--tx2)">${h.date} &bull; ${h.trapId}</div></div><div style="text-align:right"><div style="font-weight:700;color:${h.status === 'ALERT' ? '#ef4444' : '#22c55e'}">${h.count}/${h.thresh}</div><div style="font-size:.65rem;color:var(--tx2)">${h.status}</div></div></div>`).join('');
+    }
+    function updCtx() { const f = farmers[farmers.length - 1] || {}; document.getElementById('ctx1').textContent = f.name || 'None registered yet'; document.getElementById('ctx2').textContent = f.crop ? (f.crop + (f.stage ? ' (' + f.stage + ')' : '')) : 'Unknown'; document.getElementById('ctx3').textContent = ld && ld.disease || 'Not detected'; document.getElementById('ctx4').textContent = cw && cw.risk ? cw.risk.level + ' RISK' : 'Fetch weather first'; updFarmerDash(); }
+    function updFarmerDash() {
+      const f = farmers[farmers.length - 1] || null;
+      const cn = document.getElementById('myCropName');
+      const fl = document.getElementById('myFarmLoc');
+      if (cn) cn.textContent = f ? (f.crop + (f.variety ? ' (' + f.variety + ')' : '')) : (curLang === 'hi' ? 'कोई खेत नहीं' : 'No farm registered yet');
+      if (fl) fl.textContent = f ? (f.village + ', ' + f.district) : (curLang === 'hi' ? 'खेत पंजीकृत करें' : 'Register your farm to get started');
+      const m1 = document.getElementById('myf1'), m1s = document.getElementById('myf1s');
+      const m2 = document.getElementById('myf2'), m2s = document.getElementById('myf2s');
+      const m3 = document.getElementById('myf3'), m3s = document.getElementById('myf3s');
+      const m4 = document.getElementById('myf4'), m4s = document.getElementById('myf4s');
+      if (m1) m1.textContent = f ? f.crop : '--';
+      if (m1s) m1s.textContent = f ? (f.stage || '--') : '--';
+      if (m2) m2.textContent = f && f.disease ? f.disease.split(' ').slice(0, 2).join(' ') : '--';
+      if (m2s) { const col = f && f.confidence > 80 ? 'color:#ef4444' : f && f.confidence > 50 ? 'color:#f59e0b' : ''; m2s.innerHTML = f && f.confidence ? `<span style="${col}">${f.confidence}% ${curLang === 'hi' ? 'आत्मविश्वास' : 'confidence'}</span>` : '--'; }
+      if (m3) m3.textContent = cw && cw.risk ? cw.risk.level : '--';
+      if (m3s) m3s.textContent = cw ? `${cw.temperature}°C, ${cw.humidity}% ${curLang === 'hi' ? 'नमी' : 'hum'}` : '--';
+      if (m4) m4.textContent = f && f.sowingDate ? f.sowingDate : '--';
+      if (m4s && f && f.sowingDate) { const days = Math.round((Date.now() - new Date(f.sowingDate)) / (86400000)); m4s.textContent = days > 0 ? days + (curLang === 'hi' ? ' दिन' : ' days ago') : '--'; }
+    }
+    const MHI = ['Aapki fasal ko turant dhyan ki zaroorat hai. Mancozeb 75WP 2g/L paani mein spray karein. Prabhavit pattiyaan hatayein. Har 10 din repeat karein. KCC: 1800-180-1551', 'Zyada nami se rog failta hai. Neem oil 5mL/L spray karein. Khet ki drainage sudharein.'];
+    const MEN = ['Your crop needs immediate attention. Apply Mancozeb 75WP at 2g/L. Remove infected leaves. Repeat every 10 days. KCC Helpline: 1800-180-1551', 'High humidity increases disease spread. Apply neem oil (5mL/L) every 7 days. Improve field drainage.'];
+    async function sendChat() {
+      const inp = document.getElementById('cinp'), msg = inp.value.trim(); if (!msg) return; addMsg(msg, 'usr'); inp.value = ''; const th = addThink(); const f = farmers[farmers.length - 1] || {}; const hi = /[\u0900-\u097F]/.test(msg) || f.lang === 'hi'; let rep; if (K.oa && K.be) { try { const r = await fetch(K.be + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, crop: f.crop, disease: ld && ld.disease, weather: cw, lang: f.lang, history: CH.slice(-6) }) }); rep = (await r.json()).reply; } catch (e) { rep = (hi ? MHI : MEN)[0]; } } else if (K.oa) { try { const sys = 'You are CropGuard AI, expert Indian agricultural advisor. Crop: ' + (f.crop || '?') + '. Disease: ' + (ld && ld.disease || 'none') + '. Reply in Hindi Devanagari if Hindi input, else English. Specific pesticide names + dosages. Max 150 words.'; const r = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + K.oa }, body: JSON.stringify({ model: 'gpt-3.5-turbo', messages: [{ role: 'system', content: sys }, ...CH.slice(-6), { role: 'user', content: msg }], max_tokens: 300, temperature: 0.7 }) }); rep = (await r.json()).choices[0].message.content; } catch (e) { rep = (hi ? MHI : MEN)[0]; } } else { rep = (hi ? MHI : MEN)[Math.floor(Math.random() * 2)]; }
+      th.remove(); CH.push({ role: 'user', content: msg }, { role: 'assistant', content: rep }); addMsg(rep, 'bot'); if (K.el) spkEL(rep);
+    }
+    function qp(m) { document.getElementById('cinp').value = m; sendChat(); }
+    function addThink() { const b = document.getElementById('chatmsgs'); const r = document.createElement('div'); r.className = 'mr'; r.innerHTML = '<div class="ma bot"><i class="fa fa-robot"></i></div><div><div class="bub bot thk">Thinking...</div></div>'; b.appendChild(r); b.scrollTop = b.scrollHeight; return r; }
+    function addMsg(txt, cls) { const b = document.getElementById('chatmsgs'); const iu = cls === 'usr'; const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const r = document.createElement('div'); r.className = 'mr' + (iu ? ' u' : ''); r.innerHTML = '<div class="ma ' + (iu ? 'usr' : 'bot') + '"><i class="fa fa-' + (iu ? 'user' : 'robot') + '"></i></div><div><div class="bub ' + cls + '">' + txt.replace(/\n/g, '<br>') + '</div><div class="mt">' + now + '</div></div>'; b.appendChild(r); b.scrollTop = b.scrollHeight; }
+    document.getElementById('cinp').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+    function tvoc() { isv ? stpV() : strtV(); }
+    function strtV() { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) { toast('Voice not supported in this browser', 'wn'); return; } recog = new SR(); recog.lang = 'hi-IN'; recog.onresult = e => { document.getElementById('cinp').value = e.results[0][0].transcript; stpV(); sendChat(); }; recog.onerror = stpV; recog.onend = stpV; recog.start(); isv = true; const b = document.getElementById('vbtn'); b.classList.add('ls'); b.innerHTML = '<i class="fa fa-stop"></i>'; toast('Listening...', ''); }
+    function stpV() { if (recog) { recog.stop(); recog = null; } isv = false; const b = document.getElementById('vbtn'); b.classList.remove('ls'); b.innerHTML = '<i class="fa fa-microphone"></i>'; }
+    async function spkEL(txt) { if (!K.el) return; try { const r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + (K.ev || '21m00Tcm4TlvDq8ikWAM'), { method: 'POST', headers: { 'Content-Type': 'application/json', 'xi-api-key': K.el }, body: JSON.stringify({ text: txt.slice(0, 500), model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }) }); new Audio(URL.createObjectURL(await r.blob())).play(); } catch (_) { } }
+    function om(id) { document.getElementById(id).classList.add('op'); }
+    function cm2(id) { document.getElementById(id).classList.remove('op'); }
+    function toast(msg, type) { const s = document.getElementById('ts'); const t = document.createElement('div'); t.className = 'to ' + (type || ''); const i = { ok: '&#10003;', er: '&#10005;', wn: '&#9888;', '': '&#8505;' }; t.innerHTML = (i[type] || '&#8505;') + ' ' + msg; s.appendChild(t); setTimeout(() => { t.style.animation = 'none'; t.style.opacity = '0'; t.style.transform = 'translateX(28px)'; t.style.transition = 'all .3s ease'; setTimeout(() => t.remove(), 300); }, 3500); }
+    async function initConvAI() {
+      let agentId = K.ea;
+      if (!agentId) {
+        try { let r = await fetch((K.be || '') + '/api/config'); let c = await r.json(); agentId = c.agentId; } catch (e) { }
+      }
+      if (agentId && !document.querySelector('elevenlabs-convai')) {
+        const el = document.createElement('elevenlabs-convai');
+        el.setAttribute('agent-id', agentId);
+        document.body.appendChild(el);
+        if (!document.getElementById('el-convai-script')) {
+          const script = document.createElement('script');
+          script.id = 'el-convai-script';
+          script.src = 'https://elevenlabs.io/convai-widget/index.js';
+          script.async = true;
+          script.type = 'text/javascript';
+          document.head.appendChild(script);
+        }
+      }
+    }
+    // --- GPS for Registration Map ---
+    function autoLocateReg() {
+      if (!navigator.geolocation) { toast(curLang === 'hi' ? 'GPS ब्राउज़र में समर्थित नहीं' : 'GPS not supported', 'wn'); return; }
+      const btn = document.getElementById('regGpsBtn');
+      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> ' + (curLang === 'hi' ? 'स्थान खोज रहा है...' : 'Locating...');
+      btn.disabled = true;
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const lat = pos.coords.latitude.toFixed(6), lon = pos.coords.longitude.toFixed(6);
+        document.getElementById('flat').value = lat;
+        document.getElementById('flon').value = lon;
+        const g = document.getElementById('gps'); g.style.display = 'flex';
+        g.innerHTML = '<i class="fa fa-location-dot"></i> GPS: ' + parseFloat(lat).toFixed(4) + ', ' + parseFloat(lon).toFixed(4);
+        // Reverse geocode and fill village field
+        try {
+          const rr = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          const dd = await rr.json();
+          const vill = dd.address && (dd.address.village || dd.address.suburb || dd.address.town || dd.address.city) || '';
+          const dist = dd.address && (dd.address.county || dd.address.state_district) || '';
+          if (vill && !document.getElementById('fv').value) document.getElementById('fv').value = vill;
+          if (dist && !document.getElementById('fd').value) document.getElementById('fd').value = dist;
+        } catch (_) { }
+        btn.innerHTML = '<i class="fa fa-location-crosshairs"></i> ' + (curLang === 'hi' ? 'GPS से स्वचालित स्थान' : 'Auto-detect via GPS');
+        btn.disabled = false;
+        toast(t('gpsOk'), 'ok');
+        // Re-init map to show marker
+        if (rmi && rmark) { }
+      }, err => {
+        btn.innerHTML = '<i class="fa fa-location-crosshairs"></i> ' + (curLang === 'hi' ? 'GPS से स्वचालित स्थान' : 'Auto-detect via GPS');
+        btn.disabled = false;
+        toast(t('gpsDenied'), 'wn');
+      }, { timeout: 10000 });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      lk();
+      curLang = localStorage.getItem('cgLang') || 'hi';
+      setLang(curLang);
+      try { farmers = JSON.parse(localStorage.getItem('cgf') || '[]'); } catch (_) { farmers = []; }
+      if (farmers.length === 0) {
+        farmers = [
+          { id: 1, name: 'Ram Singh', mobile: '9876543210', village: 'Rampur', district: 'Lucknow', crop: 'Rice', stage: 'Tillering', soil: 'Clay', disease: 'Brown Spot', risk: 'HIGH', confidence: 91, lat: 26.85, lon: 80.95, status: 'pending_expert' },
+          { id: 2, name: 'Shiv Kumar', mobile: '9876543211', village: 'Rampur', district: 'Lucknow', crop: 'Rice', stage: 'Tillering', soil: 'Clay', disease: 'Leaf Blast', risk: 'HIGH', confidence: 88, lat: 26.84, lon: 80.93, status: 'validated', fieldConfirmed: true },
+          { id: 3, name: 'Amit Yadav', mobile: '9876543212', village: 'Kalyanpur', district: 'Kanpur', crop: 'Wheat', stage: 'Heading', soil: 'Loam', disease: 'Rust', risk: 'MEDIUM', confidence: 65, lat: 26.45, lon: 80.33, status: 'pending' },
+          { id: 4, name: 'Suresh', mobile: '9876543213', village: 'Rampur', district: 'Lucknow', crop: 'Rice', stage: 'Tillering', soil: 'Clay', disease: 'Healthy', risk: 'LOW', confidence: 95, lat: 26.86, lon: 80.96, status: 'validated' }
+        ];
+        localStorage.setItem('cgf', JSON.stringify(farmers));
+      }
+      // Restore dashboard stats
+      document.getElementById('s1').textContent = farmers.length;
+      document.getElementById('s4').textContent = ar().filter(r => r.status === 'validated').length;
+      document.getElementById('pb').textContent = ar().filter(r => r.status.startsWith('pending')).length;
+      // Show farmer sidebar items by default (before login)
+      document.querySelectorAll('.farmer-only').forEach(e => e.style.display = 'flex');
+      document.querySelectorAll('.officer-only').forEach(e => e.style.display = 'none');
+      // Init pest info
+      showPestInfo();
+      renderTrapLog();
+      rndAlerts();
+      updCtx();
+      initConvAI();
+    });
+  </script>
+</body>
+
+</html>
