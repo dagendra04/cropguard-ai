@@ -14,6 +14,9 @@ node server.js
 ```
 Open: **http://localhost:3000**
 
+Deploy Link
+https://cropguard-ai-seven.vercel.app/
+
 ## 🔑 .env File — API Keys
 
 | Key | Where to Get | Required? |
