@@ -22,8 +22,8 @@ Open: **http://localhost:3000**
 | TWILIO_AUTH_TOKEN | console.twilio.com | ❌ Optional |
 | TWILIO_FROM_NUMBER | Your Twilio number | ❌ Optional |
 | KINDWISE_API_KEY | crop.health → API Keys | ❌ Optional |
-| OPENAI_API_KEY | platform.openai.com | ❌ Optional |
-| ELEVENLABS_API_KEY | elevenlabs.io | ❌ Optional |
+| OPENAI_API_KEY | platform.openai.com | Required |
+| ELEVENLABS_API_KEY | elevenlabs.io | Required |
 
 > 🌤️ **Weather API = Open-Meteo (100% FREE, no key needed!)**
 > 💡 **All features have demo fallbacks — app works without any keys!**
